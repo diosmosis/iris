@@ -31,7 +31,7 @@
 #include <mythos/khaos/font.hpp>
 
 #include <string>
-#include <iostream>
+
 namespace mythos { namespace khaos
 {
     namespace detail

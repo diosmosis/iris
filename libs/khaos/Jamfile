@@ -39,7 +39,33 @@ if $(MYTHOS_PLATFORM) = x11
     lib z ;
 
     EXTRA_SOURCES = freetype.cpp ;
+    EXTRA_INCLUDE = <include>/usr/include/freetype2 ;
     LIBS = X11 freetype fontconfig z ;
+    ANNEX_LIBS = dl ;
+}
+else if $(MYTHOS_PLATFORM) = wx
+{
+    # HACK!!!
+
+    WXROOT = [ modules.peek : WXROOT ] ;
+
+    MYTHOS_DEF = MYTHOS_WX ;
+    MYTHOS_CONFIG = mythos/khaos/platform/wx.hpp ;
+
+    lib wx_base : : <file>$(WXROOT)/lib/libwx_base-2.8.so ;
+    lib wx_core : : <file>$(WXROOT)/lib/libwx_x11univ_core-2.8.so ;
+
+    lib dl ;
+
+    EXTRA_INCLUDE =
+#        /usr/include/wx-2.8
+#        /usr/lib/wx/include/gtk2-unicode-release-2.8
+        $(WXROOT)/include
+        $(WXROOT)/lib/wx/include/x11univ-ansi-release-2.8
+        ;
+
+    LIBS = wx_base wx_core ;
+#    LIBS = wx_gtk2u_base wx_gtk2u_core ;
     ANNEX_LIBS = dl ;
 }
 
@@ -53,12 +79,17 @@ lib khaos
     :
     <define>$(MYTHOS_DEF)
     <define>MYTHOS_KHAOS_PLATFORM_CONFIG_HPP=$(MYTHOS_CONFIG)
-    <include>/usr/include/freetype2 # HACK!!!
+    <define>__WXUNIVERSAL__
+    <define>__WXX11__
+    <include>$(EXTRA_INCLUDE)
     :
     :
     <define>$(MYTHOS_DEF)
     <define>MYTHOS_KHAOS_PLATFORM_CONFIG_HPP=$(MYTHOS_CONFIG)
+    <define>__WXUNIVERSAL__
+    <define>__WXX11__
     <include>$(MYTHOS_ROOT)
+    <include>$(EXTRA_INCLUDE)
     ;
 
 alias annex

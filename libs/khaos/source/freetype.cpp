@@ -48,9 +48,9 @@ namespace mythos { namespace khaos
         glyph_image img;
     };
 
-    struct gtk_font_extra
+    struct ft_font_extra
     {
-        gtk_font_extra() : height(0), width(0), ascender(0), descender(0) {}
+        ft_font_extra() : height(0), width(0), ascender(0), descender(0) {}
 
         FT_Face face;
         int height, width, ascender, descender;
@@ -113,19 +113,19 @@ namespace mythos { namespace khaos
         if (!extra_data)
             return;
 
-        FT_Done_Face(static_cast<gtk_font_extra *>(extra_data)->face);
+        FT_Done_Face(static_cast<ft_font_extra *>(extra_data)->face);
     }
 
     void * handle_of(font const& f)
     {
-        return &static_cast<gtk_font_extra *>(f.extra_data)->face;
+        return &static_cast<ft_font_extra *>(f.extra_data)->face;
     }
 
     int kerning_distance(font const& f, char a, char b)
     {
         BOOST_ASSERT(f);
 
-        FT_Face face = static_cast<gtk_font_extra *>(f.extra_data)->face;
+        FT_Face face = static_cast<ft_font_extra *>(f.extra_data)->face;
 
         if (!FT_HAS_KERNING(face))
             return 0;
@@ -146,7 +146,7 @@ namespace mythos { namespace khaos
 
         BOOST_ASSERT(f);
 
-        gtk_font_extra * extra = static_cast<gtk_font_extra *>(f.extra_data);
+        ft_font_extra * extra = static_cast<ft_font_extra *>(f.extra_data);
 
         iterator i = extra->glyphs.find(c);
 
@@ -188,27 +188,27 @@ namespace mythos { namespace khaos
 
     int average_char_width(font const& f)
     {
-        return static_cast<gtk_font_extra *>(f.extra_data)->width;
+        return static_cast<ft_font_extra *>(f.extra_data)->width;
     }
 
     int average_char_height(font const& f)
     {
-        return static_cast<gtk_font_extra *>(f.extra_data)->height;
+        return static_cast<ft_font_extra *>(f.extra_data)->height;
     }
 
     int line_length(font const& f)
     {
-        return static_cast<gtk_font_extra *>(f.extra_data)->height;
+        return static_cast<ft_font_extra *>(f.extra_data)->height;
     }
 
     int ascender(font const& f)
     {
-        return static_cast<gtk_font_extra *>(f.extra_data)->ascender;
+        return static_cast<ft_font_extra *>(f.extra_data)->ascender;
     }
 
     int descender(font const& f)
     {
-        return static_cast<gtk_font_extra *>(f.extra_data)->descender;
+        return static_cast<ft_font_extra *>(f.extra_data)->descender;
     }
 
     void find_font(font & f, std::string const& name, int height, int weight, int style)
@@ -279,8 +279,8 @@ namespace mythos { namespace khaos
             FcPatternDestroy(real_pattern);
 
             // create font
-            gtk_font_extra * extra;
-            f.extra_data = extra = new gtk_font_extra();
+            ft_font_extra * extra;
+            f.extra_data = extra = new ft_font_extra();
 
             extra->face = face;
 

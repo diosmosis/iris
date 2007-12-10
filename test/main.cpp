@@ -164,14 +164,13 @@ namespace myapp
         // FIXME: labels should be centered
         window
             do_dlog = button(show_dialog)[ hcenter["Show Dialog"] ],
-            quit = button(quit_prog)[ hcenter["Quit"] ],
-            temp = label("Hello World")
+            quit = button(quit_prog)[ hcenter["Quit"] ]
             ;
 
         layout(mainframe) =
             rows[ "Hello World"                      ]
-                [ "Mouse coords:" | text(mloc_str)   ]
-                [ do_dlog         | right[quit]      ]
+                //[ "Mouse coords:" | text(mloc_str)   ]
+                //[ do_dlog         | right[quit]      ]
             ;
 
         extra = (iris::on::mouse_move[set_mloc_str()], iris::on::paint[paint_bgnd()]);

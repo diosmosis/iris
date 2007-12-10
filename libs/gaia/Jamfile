@@ -27,9 +27,6 @@ project mythos/gaia
     : requirements
     ;
 
-lib user32 ;
-lib gdi32 ;
-
 lib gaia
     :
     plugin.cpp
@@ -42,39 +39,22 @@ lib gaia
     <include>$(MYTHOS_ROOT)
     ;
 
-lib gaia_msw
-    :
-    msw.cpp
-    user32
-    gdi32
-    $(BOOST_ROOT)/libs/system/build//boost_system
-    $(MYTHOS_ROOT)/libs/khaos//khaos
-    $(MYTHOS_ROOT)/libs/khaos//annex
-    $(MYTHOS_ROOT)/libs/nyx//nyx
-    :
-    :
-    :
-    <include>$(MYTHOS_ROOT)
-    ;
-
-lib gaia_gtk
-    :
-    gtk.cpp
-    /gtk//Gtk
-    $(BOOST_ROOT)/libs/system/build//boost_system
-    $(MYTHOS_ROOT)/libs/khaos//khaos
-    $(MYTHOS_ROOT)/libs/khaos//annex
-    $(MYTHOS_ROOT)/libs/nyx//nyx
-    :
-    :
-    :
-    <include>$(MYTHOS_ROOT)
-    ;
-
 lib gaia_univ
     :
     univ.cpp
     $(BOOST_ROOT)/libs/system/build//boost_system
+    $(MYTHOS_ROOT)/libs/khaos//khaos
+    $(MYTHOS_ROOT)/libs/khaos//annex
+    $(MYTHOS_ROOT)/libs/nyx//nyx
+    :
+    :
+    :
+    <include>$(MYTHOS_ROOT)
+    ;
+
+lib gaia_wx
+    :
+    wx.cpp
     $(MYTHOS_ROOT)/libs/khaos//khaos
     $(MYTHOS_ROOT)/libs/khaos//annex
     $(MYTHOS_ROOT)/libs/nyx//nyx

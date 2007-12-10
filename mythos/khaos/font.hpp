@@ -39,7 +39,7 @@ namespace mythos { namespace khaos
         {
             italic = (1L << 0),
             underline = (1L << 1),
-            strikeout = (1L << 2)
+            strikethrough = (1L << 2)
         };
     }
 

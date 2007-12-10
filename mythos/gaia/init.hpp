@@ -33,8 +33,11 @@ namespace mythos { namespace gaia
 {
     MYTHOS_GAIA_DECL void init();
 
+    // in pluggable build, extra is file to load
+    MYTHOS_GAIA_DECL void init(std::string const& extra);
+
     // 2nd parameter only used in pluggable gaia build.  not used in plugins
-    MYTHOS_GAIA_DECL void init(std::string const& extra, std::string const& dummy = std::string());
+    MYTHOS_GAIA_DECL void init(std::string const& extra, std::string const& dummy);
 }}
 
 #endif // #if !defined( MYTHOS_GAIA_INIT_HPP )

@@ -74,6 +74,41 @@ namespace mythos { namespace khaos
     MYTHOS_KHAOS_DECL void cleanup();
 }}
 
+// HACK!!!  wxWidgets uses its own macros, so we must use them
+#elif defined(MYTHOS_WX)
+#   include <wx/app.h>
+
+#   define MYTHOS_KHAOS_IMPLEMENT_MAIN(init)                        \
+    IMPLEMENT_APP(mythos::khaos::detail::app<init>)
+
+namespace mythos { namespace khaos
+{
+    MYTHOS_KHAOS_DECL bool entry(int * argc, char *** argv);
+    MYTHOS_KHAOS_DECL void cleanup();
+
+    namespace detail
+    {
+        template <int (*init)(int argc, char ** argv)>
+        struct app : wxApp
+        {
+            bool OnInit()
+            {
+                if (!entry(&this->argc, &this->argv))
+                    return false;
+
+                return init(this->argc, this->argv) == EXIT_SUCCESS;
+            }
+
+            int OnExit()
+            {
+                cleanup();
+
+                return wxApp::OnExit();
+            }
+        };
+    }
+}}
+
 #else
 #   define MYTHOS_KHAOS_IMPLEMENT_MAIN(init)                        \
     int main(int argc, char ** argv)                                \

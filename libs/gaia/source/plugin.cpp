@@ -35,7 +35,7 @@
 #include <mythos/iris/dsel.hpp>
 
 #include <exception>
-#include <iostream>
+
 static mythos::gaia::plugin gaiaimpl;
 
 namespace mythos { namespace gaia
@@ -112,6 +112,12 @@ namespace mythos { namespace gaia
     {
         // TODO: should search for an appropriate default gaia lib
         throw std::runtime_error("gaia::init() not implemented");
+    }
+
+    // extra is file to load
+    void init(std::string const& extra)
+    {
+        gaiaimpl.load(extra);
     }
 
     // extra is file to load, dummy is extra data

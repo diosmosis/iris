@@ -322,7 +322,6 @@ namespace mythos { namespace khaos
             return false;
         }
 
-        // FIXME: should all use event::raise(...) instead of directly using raise_event
         static void handle_event(XEvent & event, x11_event_info & ei, x11_window * focus)
         {
             ei.data = &event;
@@ -599,9 +598,8 @@ namespace mythos { namespace khaos
                     result->children.push_back(*detail::mythos_window_from_native(children[i]));
                 else
                 {
-                    window * child = foreign_create_window(&children[i]);
-
-                    result->children.push_back(*static_cast<x11_window *>(child));
+                    // the child window is added when the x11_window is created
+                    foreign_create_window(&children[i]);
                 }
             }
 
@@ -713,6 +711,8 @@ namespace mythos { namespace khaos
             xpar->children.push_back(*xwin);
 
             detail::set_buffer(xwin);
+
+            wxwin->is_toplevel = false;
 
             phandle = xpar->handle;
         }
