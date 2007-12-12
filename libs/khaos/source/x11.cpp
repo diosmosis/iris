@@ -712,7 +712,7 @@ namespace mythos { namespace khaos
 
             detail::set_buffer(xwin);
 
-            wxwin->is_toplevel = false;
+            xwin->is_toplevel = false;
 
             phandle = xpar->handle;
         }

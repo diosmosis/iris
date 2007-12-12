@@ -33,8 +33,9 @@
 
 #include <map>
 #include <stdexcept>
-#include <iostream>
+
 #include <fontconfig/fontconfig.h>
+
 #include <ft2build.h>
 #include FT_FREETYPE_H
 

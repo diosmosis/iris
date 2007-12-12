@@ -218,6 +218,12 @@ namespace mythos { namespace nyx
         khaos::modalize(win.khaos_window());
     }
 
+    // set_parent
+    inline void set_parent(window const& win, window const& par)
+    {
+        khaos::set_parent(win.khaos_window(), par.khaos_window());
+    }
+
     // handle_event
     MYTHOS_NYX_DECL bool handle_event(window const& win, int et, void * ei);
 

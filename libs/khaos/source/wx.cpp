@@ -43,20 +43,9 @@
 #include <wx/wx.h>
 #include <wx/popupwin.h>
 
-#include <iostream>
 #define MYTHOS_KHAOS_BUFFER_GROW_BY 128
 
-#include <cxxabi.h>
 #include <boost/gil/extension/io/bmp_io.hpp>
-
-template <typename T>
-void print_demangled_name(T & o)
-{
-int status;
-    char * name = abi::__cxa_demangle(typeid(o).name(), 0, 0, &status);
-std::cout << name << std::endl;
-    free(name);
-}
 
 // wxGTK won't create certain windows w/o parents, which makes it impossible to
 // get size/position info for parentless child windows.  to emulate parentless child
@@ -94,7 +83,7 @@ namespace mythos { namespace khaos
                 // connect events
 
                 // FIXME: wxEVT_PAINT doesn't seem to propagate on x11, is this normal?
-                void (self_type::*paint_impl)(wxPaintEvent &) = &self_type::propagate_event<paint, wxPaintEvent>;
+                void (self_type::*paint_impl)(wxPaintEvent &) = &self_type::generic_event<paint, wxPaintEvent>;
                 this->Connect(wxEVT_PAINT, (wxObjectEventFunction) paint_impl);
 
                 void (self_type::*mouse_impl)(wxMouseEvent &);
@@ -128,19 +117,20 @@ namespace mythos { namespace khaos
             }
 
             template <typename E, typename wxE>
-            void generic_event(wxE &)
+            void generic_event(wxE & event)
             {
+                this->GetNextHandler()->ProcessEvent(event);
+
                 wx_event_info ei = {win, NULL};
 
                 raise_event(E::value, ei);
             }
 
-            template <typename E, typename wxE>
-            void propagate_event(wxE & evt);
-
             template <typename E>
             void mouse_event(wxMouseEvent & event)
             {
+                this->GetNextHandler()->ProcessEvent(event);
+
                 point pt(event.GetX(), event.GetY());
 
                 wx_event_info ei = {win, &pt};
@@ -150,6 +140,8 @@ namespace mythos { namespace khaos
 
             void on_resize(wxSizeEvent & event)
             {
+                this->GetNextHandler()->ProcessEvent(event);
+
                 point pt(event.GetSize().GetWidth(), event.GetSize().GetHeight());
 
                 wx_event_info ei = {win, &pt};
@@ -157,7 +149,7 @@ namespace mythos { namespace khaos
                 raise_event(resize::value, ei);
             }
 
-            void on_destroy(wxEvent &);
+            void on_destroy(wxEvent & event);
 
             wx_window * win;
         };
@@ -192,23 +184,10 @@ namespace mythos { namespace khaos
 
     namespace detail
     {
-        template <typename E, typename wxE>
-        void mythos_event_handler::propagate_event(wxE & evt)
+        inline void mythos_event_handler::on_destroy(wxEvent & event)
         {
-            wx_event_info ei = {win, NULL};
+            this->GetNextHandler()->ProcessEvent(event);
 
-            raise_event(E::value, ei);
-
-            BOOST_FOREACH(window & child, win->children)
-            {
-                ((wx_window &) child).main_handler.propagate_event<E>(evt);
-                // FIXME: can evt just be passed to the child's wxWindow?
-//                E::raise(&child);
-            }
-        }
-
-        inline void mythos_event_handler::on_destroy(wxEvent &)
-        {
             delete win;
         }
 
@@ -443,7 +422,7 @@ namespace mythos { namespace khaos
             wxSize(cx, cy)
         );
 
-        wx_window * result = new wx_window(win, p, true, x, y, cx, cy);
+        wx_window * result = new wx_window(win, p, false, x, y, cx, cy);
 
         if (real_parent && real_parent->win->IsShown())
             win->Show(true);

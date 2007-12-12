@@ -159,7 +159,7 @@ namespace myapp
 
         load_img();
 
-        mainframe = nyx::create_toplevel_window("My window", 200, 200, 1, 1);
+        mainframe = nyx::create_toplevel_window("My window", 200, 200, 200, 200);
 
         // FIXME: labels should be centered
         window
@@ -169,8 +169,8 @@ namespace myapp
 
         layout(mainframe) =
             rows[ "Hello World"                      ]
-                //[ "Mouse coords:" | text(mloc_str)   ]
-                //[ do_dlog         | right[quit]      ]
+                [ "Mouse coords:" | text(mloc_str)   ]
+                [ do_dlog         | right[quit]      ]
             ;
 
         extra = (iris::on::mouse_move[set_mloc_str()], iris::on::paint[paint_bgnd()]);
