@@ -31,6 +31,7 @@ rule get-platform ( )
         ECHO "Error: No platform selected." ;
         ECHO "Supported khaos backends:" ;
         ECHO " - x11 (X Window System)" ;
+        ECHO " - wx (wxWidgets) (BROKEN/UNTESTED)" ;
 
         EXIT ;
     }

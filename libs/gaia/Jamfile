@@ -52,15 +52,19 @@ lib gaia_univ
     <include>$(MYTHOS_ROOT)
     ;
 
-lib gaia_wx
-    :
-    wx.cpp
-    $(MYTHOS_ROOT)/libs/khaos//khaos
-    $(MYTHOS_ROOT)/libs/khaos//annex
-    $(MYTHOS_ROOT)/libs/nyx//nyx
-    :
-    :
-    :
-    <include>$(MYTHOS_ROOT)
-    ;
+if $(MYTHOS_PLATFORM) = wx
+{
+    lib gaia_wx
+        :
+        wx.cpp
+        $(MYTHOS_ROOT)/libs/khaos//khaos
+        $(MYTHOS_ROOT)/libs/khaos//annex
+        $(MYTHOS_ROOT)/libs/nyx//nyx
+        /wx//core
+        :
+        :
+        :
+        <include>$(MYTHOS_ROOT)
+        ;
+}
 
