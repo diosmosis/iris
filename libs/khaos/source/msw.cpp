@@ -274,6 +274,14 @@ namespace mythos { namespace khaos
             ::ReleaseDC(mswwin->handle, hdc);
         }
 
+        static bool raise_event(int id, event_info & ei)
+        {
+            if (ei.mswwin->handler)
+                return ei.mswwin->handler(id, &ei);
+
+            return false;
+        }
+
         static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             msw_window * mswwin = mythos_window_from_native(hwnd);
@@ -678,11 +686,23 @@ namespace mythos { namespace khaos
         {
             LPARAM lparam = pt.x + (pt.y << (sizeof(WORD) * 8));
 
-            ::SendMessage(
-            point data(pt);
+            msw_window * mswwin = static_cast<msw_window *>(win);
 
-            msw_event_info ei = {static_cast<msw_window *>(win), 0, };
-FUCK
+            UINT msg = 0;
+            switch (N)
+            {
+            case l_button_down::value: msg = WM_LBUTTONDOWN; break;
+            case m_button_down::value: msg = WM_MBUTTONDOWN; break;
+            case r_button_down::value: msg = WM_RBUTTONDOWN; break;
+            case l_button_up::value: msg = WM_LBUTTONUP; break;
+            case m_button_up::value: msg = WM_MBUTTONUP; break;
+            case r_button_up::value: msg = WM_RBUTTONUP; break;
+            case mouse_move::value: msg = WM_MOUSEMOVE; break;
+            default:
+                throw std::runtime_error("khaos(msw): Illegal button event type in detail::button_raise");
+            };
+
+            ::SendMessage(mswwin->handle, msg, 0, lparam);
         }
     }
 
