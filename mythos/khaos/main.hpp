@@ -93,8 +93,14 @@ namespace mythos { namespace khaos
         {
             bool OnInit()
             {
+#if wxUSE_UNICODE
+                // FIXME: i'm sure this'll cause some problems...
+                char ** argv_ = this->argv;
+                if (!entry(&this->argc, &argv_))
+#else
                 if (!entry(&this->argc, &this->argv))
                     return false;
+#endif
 
                 return init(this->argc, this->argv) == EXIT_SUCCESS;
             }

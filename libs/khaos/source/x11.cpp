@@ -141,7 +141,7 @@ namespace mythos { namespace khaos
 
     namespace detail
     {
-        // buffer related functions ONLY manipulate the buffer
+        // buffer related functions ONLY manipulate the buffer (and the indices into the buffer)
         static void set_buffer_view(x11_window * xwin)
         {
             xwin->buffer = image_view(
@@ -352,7 +352,7 @@ namespace mythos { namespace khaos
 
                 break;
             // FIXME: resize & move will only take effect when this event is processed, which can cause
-            // problems since many resize/move ops are done before the event loop is started
+            // problems since many resize/move ops are done before the event loop is started (did I fix this?)
             case ConfigureNotify:
             {
                 bool resized = false, moved = false;
@@ -559,6 +559,8 @@ namespace mythos { namespace khaos
     {
         Window handle = *static_cast<Window *>(win);
 
+        BOOST_ASSERT(!detail::is_mythos_window(handle));
+
         XWindowAttributes attributes;
         XGetWindowAttributes(::x11_display, handle, &attributes);
 
@@ -574,13 +576,10 @@ namespace mythos { namespace khaos
         x11_window * parent = NULL;
         bool is_toplevel = parent_handle == attributes.root;
 
-        if (!is_toplevel)
-        {
-            if (detail::is_mythos_window(parent_handle))
-                parent = detail::mythos_window_from_native(parent_handle);
-            else
-                parent = static_cast<x11_window *>(foreign_create_window(&parent_handle));
-        }
+        if (detail::is_mythos_window(parent_handle))
+            parent = detail::mythos_window_from_native(parent_handle);
+        else
+            parent = static_cast<x11_window *>(foreign_create_window(&parent_handle));
 
         // create window
         x11_window * result = new x11_window(
@@ -594,7 +593,7 @@ namespace mythos { namespace khaos
         {
             for (unsigned int i = 0; i != num_children; ++i)
             {
-                if (detail::is_mythos_window(children[i]))
+                if (detail::is_mythos_window(children[i])) // shouldn't ever come up
                     result->children.push_back(*detail::mythos_window_from_native(children[i]));
                 else
                 {
@@ -710,8 +709,6 @@ namespace mythos { namespace khaos
             xwin->parent = xpar;
             xpar->children.push_back(*xwin);
 
-            detail::set_buffer(xwin);
-
             xwin->is_toplevel = false;
 
             phandle = xpar->handle;
@@ -721,13 +718,13 @@ namespace mythos { namespace khaos
             phandle = XDefaultRootWindow(::x11_display); // FIXME: should get root of win's screen
 
             xwin->is_toplevel = true;
-
-            detail::set_buffer(xwin);
         }
+
+        detail::set_buffer(xwin);
 
         XReparentWindow(::x11_display, xwin->handle, phandle, xwin->x, xwin->y);
 
-        if ((!parent || xpar->shown) && !xwin->shown)
+        if (!parent || xpar->shown)
             show_window(xwin);
     }
 

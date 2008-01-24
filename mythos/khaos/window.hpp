@@ -37,6 +37,8 @@
 // NOTE: coordinates are related to parent window
 namespace mythos { namespace khaos
 {
+    // TODO: use constant-time size() in intrusive list of child windows
+
     // implementations derive from this.  since there will only be one derived class,
     // there is no virtual destructor.
     struct window

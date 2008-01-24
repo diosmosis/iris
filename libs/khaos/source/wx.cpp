@@ -605,6 +605,8 @@ namespace mythos { namespace khaos
             case r_button_down::value: event_type = wxEVT_RIGHT_DOWN; break;
             case r_button_up::value: event_type = wxEVT_RIGHT_UP; break;
             case mouse_move::value: event_type = wxEVT_MOTION; break;
+            default:
+                BOOST_ASSERT(false && "khaos(wx): invalid value for N in button_raise");
             };
 
             wxMouseEvent event(event_type);

@@ -29,6 +29,8 @@
 
 #include <mythos/khaos/event_handler.hpp>
 
+#include <mythos/support/safe_bool.hpp>
+
 #include <boost/xpressive/proto/traits.hpp>
 
 #include <boost/intrusive/list_hook.hpp>
@@ -37,19 +39,6 @@
 
 namespace mythos { namespace iris
 {
-    // TODO: make a safe_bool lib:
-    // namespace safe_bool
-    // {
-    //     struct dummy_t { int value; };
-    //
-    //     typedef int dummy_t::* bool_;
-    //
-    //     bool_ const true_ = &dummy_t::value;
-    //     bool_ const false_ = 0;
-    // }
-
-    struct dummy_t { int value; };
-
     namespace detail
     {
         inline void swap_handlers(khaos::event_handler & x, khaos::event_handler & y)
@@ -66,7 +55,6 @@ namespace mythos { namespace iris
         typedef boost::intrusive::list_member_hook<
             boost::intrusive::link_mode<boost::intrusive::auto_unlink>
         > hook_type;
-        typedef int dummy_t::* unspecified_bool_t;
 
         event_handler() : impl() {}
 
@@ -106,10 +94,7 @@ namespace mythos { namespace iris
             return impl(et, ei);
         }
 
-        operator unspecified_bool_t() const
-        {
-            return impl ? &dummy_t::value : 0;
-        }
+        MYTHOS_SAFE_BOOL_OPERATOR(impl)
 
         void disconnect()
         {

@@ -199,8 +199,6 @@ namespace mythos { namespace nyx
         // set the parent to left(expr)
         for (item_iterator item = lay.items.begin() + i; item != lay.items.end() && !item->parent; ++item)
             item->parent = left;
-
-        // FIXME: if left's children are too big to fit in left, left should be resized
     }
 
     // bitwise_or(layout, layout)       **... | ...
