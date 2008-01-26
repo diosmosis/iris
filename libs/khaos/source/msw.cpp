@@ -29,11 +29,14 @@
 #include <mythos/khaos/image.hpp>
 #include <mythos/khaos/font.hpp>
 #include <mythos/khaos/main.hpp>
+#include <mythos/khaos/font.hpp>
 
 #include <mythos/khaos/event/paint.hpp>
 #include <mythos/khaos/event/button.hpp>
 #include <mythos/khaos/event/resize.hpp>
 #include <mythos/khaos/event/reconfigure.hpp>
+
+#include <mythos/khaos/register_module.hpp>
 
 #include <boost/intrusive/list.hpp>
 
@@ -42,14 +45,18 @@
 #include <boost/system/system_error.hpp>
 
 #include <boost/shared_ptr.hpp>
-
 #include <boost/foreach.hpp>
+#include <boost/none.hpp>
+
+#include <map>
 
 static char const mythos_window_class[] = "MYTHOS_WINDOW_CLASS";
 static ATOM mythos_window_class_atom;
 
 static HINSTANCE app_instance;
 static int cmd_show;
+
+static mythos::khaos::font default_font;
 
 namespace mythos { namespace khaos
 {
@@ -347,6 +354,9 @@ namespace mythos { namespace khaos
         {
             throw std::runtime_error("khaos(msw): RegisterClassEx failed in mythos::entry");
         }
+
+        // load default font
+        find_font(::default_font, "Monospace", 12);
     }
 
     namespace detail
@@ -706,5 +716,234 @@ namespace mythos { namespace khaos
         }
     }
 
+    // event/paint.hpp
+    namespace detail
+    {
+        image_view view_from_event_info(void * info)
+        {
+            msw_window * win = static_cast<msw_event_info *>(info)->win;
+
+            return win->buffer;
+        }
+
+        bool draw_view(image_view const& vw, void * info)
+        {
+            msw_window * win = static_cast<msw_event_info *>(info)->win;
+
+            detail::draw_view(vw, win);
+
+            return true;
+        }
+    }
+
+    bool paint::raise(window * win)
+    {
+        return ::RedrawWindow(
+            static_cast<msw_window *>(win)->handle,
+            NULL,
+            NULL,
+            RDW_UPDATENOW|RDW_ALLCHILDREN|RDW_INVALIDATE
+        );
+    }
+
+    // event/resize.hpp
+    namespace detail
+    {
+        point resize_old_width(void * ei)
+        {
+            msw_event_info * info = static_cast<msw_event_info *>(ei);
+
+            return point(LOWORD(info->lparam), HIWORD(info->lparam));
+        }
+    }
+
+    bool resize::raise(window * win, point pt)
+    {
+        LPARAM lparam = pt.x + (pt.y << (sizeof(WORD) * 8));
+
+        return ::SendMessage(static_cast<msw_window *>(win)->handle, WM_SIZE, 0, lparam) == 0;
+    }
+
+    // event/reconfigure.hpp
+    namespace detail
+    {
+        point reconfigure_space(void * info)
+        {
+            return *static_cast<point *>(static_cast<msw_event_info *>(info)->data);
+        }
+    }
+
+    bool reconfigure::raise(window * win, point pt)
+    {
+        msw_event_info ei = {static_cast<msw_window *>(win), 0, 0, &pt};
+
+        return detail::raise_event(reconfigure::value, ei);
+    }
+
+    // font.hpp
+    struct glyph_impl : glyph
+    {
+        glyph_image img;
+    };
+
+    struct msw_font_extra
+    {
+        msw_font_extra(HFONT f)
+            : face(f), dc(NULL), height(0), width(0), ascender(0), descender(0)
+        {
+            dc = ::CreateCompatibleDC(::GetDC(NULL));
+            old = ::SelectObject(dc, (HGDIOBJ) face);
+
+            ::GetTextMetrics(dc, &tmetrics);
+        }
+        ~msw_font_extr()
+        {
+            ::SelectObject(dc, old);
+            ::DeleteDC(dc);
+            ::DeleteObject((HGDIOBJ) face);
+        }
+
+        HFONT face;
+        HDC dc;
+        TEXTMETRICS tmetrics;
+
+        HGDIOBJ old;
+
+        std::map<char, glyph_impl> glyphs;
+    };
+
+    font::font() : extra_data(0) {}
+
+    font::~font()
+    {
+        if (!extra_data) return;
+
+        msw_font_extra * extra = static_cast<msw_font_extra *>(extra_data);
+
+        delete static_cast<msw_font_extra *>(extra_data);
+    }
+
+    void * handle_of(font const& f)
+    {
+        BOOST_ASSERT(f);
+
+        return &static_cast<msw_font_extra *>(f.extra_data)->handle;
+    }
+
+    int kerning_distance(font const& f, char a, char b)
+    {
+        BOOST_ASSERT(f);
+
+        KERNINGPAIR kern;
+        kern.wFirst = a;
+        kern.wSecond = b;
+
+        ::GetKerningPairs(static_cast<msw_font_extra *>(f.extra_data)->dc, 1, &kern);
+
+        return kern.iKernAmount;
+    }
+
+    glyph const& find_glyph(font const& f, char c)
+    {
+        typedef std::map<char, glyph_impl>::iterator   iterator;
+
+        BOOST_ASSERT(f);
+
+        msw_font_extra * extra = static_cast<msw_font_extra *>(f.extra_data);
+
+        iterator i = extra->glyphs.find(c);
+
+        // if c already has a cached image in glyphs, return it, otherwise create one
+        if (i != extra->glyphs.end())
+            return i->second;
+        else
+            i = extra->glyphs.insert(std::make_pair(c, glyph_impl())).first;
+
+        // get glyph metrics
+        GLYPHMETRICS metrics;
+        ::GetGlyphOutline(extra->dc, c, GGO_METRICS, &metrics, 0, NULL, NULL);
+
+        i->second.bearing = point(metrics.gmptGlyphOrigin.x, metrics.gmptGlyphOrigin.y);
+        i->second.advance = gmCellIncX;
+
+        // get glyph outline
+        int w = metrics.gmBlackBoxX;
+        int h = metrics.gmBlackBoxY;
+
+        i->second.img.recreate(w, h);
+        i->second.view = boost::gil::view(i->second.img);
+
+        size_t bytes = i->second.view.height() * i->second.view.xy_at(0, 0).row_size();
+
+        BOOST_ASSERT(bytes == ::GetGlyphOutline(extra->dc, c, GGO_GRAY8_BITMAP, &metrics, 0, NULL, NULL));
+
+        DWORD result = ::GetGlyphOutline(
+            extra->dc,
+            c,
+            GGO_GRAY8_BITMAP,
+            &metrics,
+            bytes,
+            boost::gil::interleaved_view_get_raw_data(i->second.view),
+            NULL
+        );
+
+        return i->second;
+    }
+
+    int average_char_width(font const& f)
+    {
+        return static_cast<msw_font_extra *>(f.extra_data)->tmetrics.tmAveCharWidth;
+    }
+
+    int average_char_height(font const& f)
+    {
+        return static_cast<msw_font_extra *>(f.extra_data)->tmetrics.tmHeight;
+    }
+
+    int line_length(font const& f)
+    {
+        return average_char_height(f);
+    }
+
+    int ascender(font const& f)
+    {
+        return static_cast<msw_font_extra *>(f.extra_data)->tmetrics.tmAscent;
+    }
+
+    int descender(font const& f)
+    {
+        return static_cast<msw_font_extra *>(f.extra_data)->tmetrics.tmDescent;
+    }
+
+    void find_font(font & f, std::string const& name, int height, int weight, int style)
+    {
+        // FIXME: shouldn't require fonts to be empty
+        BOOST_ASSERT(!f);
+
+        HFONT hfont = ::CreateFont(
+            height,
+            0,
+            0,
+            0,
+            weight,
+            style & font_style::italic,
+            style & font_style::underline,
+            style & font_style::strikethrough,
+            0,
+            0,
+            0,
+            0,
+            name.c_str()
+        );
+
+        if (!hfont) return;
+
+        f.extra_data = new msw_font_extra(hfont);
+    }
+
+    font const& default_font()
+    {
+        return ::default_font;
+    }
 }}
 

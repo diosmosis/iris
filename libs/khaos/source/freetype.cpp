@@ -214,6 +214,9 @@ namespace mythos { namespace khaos
 
     void find_font(font & f, std::string const& name, int height, int weight, int style)
     {
+        // FIXME: shouldn't require fonts to be empty
+        BOOST_ASSERT(!f);
+
         FcValue fcval;
 
         // build pattern
