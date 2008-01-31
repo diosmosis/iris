@@ -50,6 +50,8 @@
 
 #include <map>
 
+#include <windows.h>
+
 static char const mythos_window_class[] = "MYTHOS_WINDOW_CLASS";
 static ATOM mythos_window_class_atom;
 

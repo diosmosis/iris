@@ -70,7 +70,7 @@ namespace mythos { namespace iris
     struct gen_event_handler
     {
         typedef typename boost::proto::result_of::deep_copy<Expr>::type expr_type;
-        typedef typename event_list::apply<Expr, int, int>::type cases;
+        typedef typename event_list::result<Expr>::type cases;
 
         gen_event_handler(Expr const& x) : expr(boost::proto::deep_copy(x)) {}
 

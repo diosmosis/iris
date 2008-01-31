@@ -48,8 +48,8 @@ namespace mythos { namespace nyx
         BOOST_MPL_ASSERT((boost::proto::matches<Expr, grammar::layout_g>));
 
         layout_data lay(
-            window_count::apply<Expr, int, int>::type::value,
-            directive_count::apply<Expr, int, int>::type::value
+            window_count::result<Expr>::type::value,
+            directive_count::result<Expr>::type::value
         );
 
         lay.xpad = xpad;
@@ -65,8 +65,8 @@ namespace mythos { namespace nyx
         BOOST_MPL_ASSERT((boost::proto::matches<Expr, grammar::container_window>));
 
         layout_data lay(
-            window_count::apply<Expr, int, int>::type::value,
-            directive_count::apply<Expr, int, int>::type::value
+            window_count::result<Expr>::type::value,
+            directive_count::result<Expr>::type::value
         );
 
         // FIXME: should be customizable...

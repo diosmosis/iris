@@ -78,6 +78,13 @@ namespace mythos { namespace iris
         : boost::proto::matches<E, grammar::context>
     {};
 
+    // event_handler
+    template <typename N>
+    inline bool run_action(event_handler const& handler, void * ei)
+    {
+        return handler(N::value, ei);
+    }
+
     // subscript(A | B..., ...)
     template <typename N, typename E>
     inline bool run_action(E const& expr, void * ei,
@@ -104,6 +111,13 @@ namespace mythos { namespace iris
     }
 
     // context versions
+    // event_handler
+    template <typename N, typename S>
+    inline bool run_action(event_handler const& handler, void * ei, S &)
+    {
+        return handler(N::value, ei);
+    }
+
     // subscript(A | B..., ...)
     template <typename N, typename E, typename S>
     inline bool run_action(E const& expr, void * ei, S & s,

@@ -35,6 +35,8 @@
 
 namespace mythos { namespace iris
 {
+    struct event_handler;
+
     template <typename T>
     struct is_context_terminal
         : boost::mpl::false_
@@ -60,9 +62,7 @@ namespace mythos { namespace iris
         struct event_handler;
 
         struct event_terminal
-            : boost::proto::if_<
-                is_event<boost::proto::result_of::arg<boost::mpl::_> >
-            >
+            : boost::proto::if_<is_event<boost::proto::_arg0>()>
         {};
 
         struct event_composition
@@ -76,12 +76,15 @@ namespace mythos { namespace iris
         {};
 
         struct event
-            : boost::proto::subscript<
-                boost::proto::or_<
-                    event_terminal,
-                    event_composition
+            : boost::proto::or_<
+                boost::proto::subscript<
+                    boost::proto::or_<
+                        event_terminal,
+                        event_composition
+                    >,
+                    boost::proto::_
                 >,
-                boost::proto::_
+                boost::proto::terminal<iris::event_handler *> // event_handler uses extends w/ event_handler *
             >
         {};
 
@@ -96,9 +99,7 @@ namespace mythos { namespace iris
         {};
 
         struct context_terminal
-            : boost::proto::if_<
-                is_context_terminal<boost::proto::result_of::arg<boost::mpl::_> >
-            >
+            : boost::proto::if_<is_context_terminal<boost::proto::_arg0>()>
         {};
 
         struct context

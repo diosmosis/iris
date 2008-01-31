@@ -55,9 +55,7 @@ namespace mythos { namespace nyx
         struct window_
             : boost::proto::or_<
                 window,
-                boost::proto::if_<
-                    generates_window<boost::proto::result_of::arg<boost::mpl::_> >
-                >
+                boost::proto::if_<generates_window<boost::proto::_arg0>()>
             >
         {};
 
@@ -69,9 +67,7 @@ namespace mythos { namespace nyx
         {};
 
         struct directive_terminal
-            : boost::proto::if_<
-                is_directive<boost::proto::result_of::arg<boost::mpl::_> >
-            >
+            : boost::proto::if_<is_directive<boost::proto::_arg0>()>
         {};
 
         struct directive
@@ -82,11 +78,7 @@ namespace mythos { namespace nyx
         {};
 
         struct column_spec_keyword
-            : boost::proto::if_<
-                is_column_specifier<
-                    boost::proto::result_of::arg<boost::mpl::_>
-                >
-            >
+            : boost::proto::if_<is_column_specifier<boost::proto::_arg0>()>
         {};
 
         struct column_spec

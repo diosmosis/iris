@@ -27,7 +27,7 @@
 
 #include <boost/xpressive/proto/proto.hpp>
 #include <boost/xpressive/proto/transform/fold.hpp>
-#include <boost/xpressive/proto/transform/apply.hpp>
+#include <boost/xpressive/proto/transform/when.hpp>
 
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/end.hpp>
@@ -37,37 +37,22 @@
 namespace mythos { namespace proto_detail
 {
     using namespace boost::proto;
-    namespace mplpl = boost::mpl::placeholders;
+    using boost::proto::transform::when;
 
-    struct grammar_list_end
-    {
-        template <typename E>
-        struct apply
-            : boost::mpl::list<typename result_of::arg<E>::type>
-        {};
-    };
+    namespace mplpl = boost::mpl::placeholders;
 
     template <typename G>
     struct grammar_list
         : or_<
-            transform::apply1<G, grammar_list_end>,
-            transform::always<
-                terminal<_>,
-                boost::mpl::list<>
-            >,
-            transform::fold<
-                nary_expr<
-                    _,
-                    transform::apply2<
-                        vararg<grammar_list<G> >,
-                        boost::mpl::insert_range<
-                            mplpl::_2,
-                            boost::mpl::end<mplpl::_2>,
-                            mplpl::_1
-                        >
-                    >
-                >,
-                boost::mpl::list<>
+            when<G, boost::mpl::list<_arg0> >,
+            when<terminal<_>, boost::mpl::list<> >,
+            when<
+                nary_expr<_, vararg<grammar_list<G> > >,
+                boost::mpl::insert_range<
+                    _state,
+                    boost::mpl::end<_state>,
+                    _arg0
+                >
             >
         >
     {};

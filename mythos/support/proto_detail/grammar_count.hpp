@@ -27,7 +27,7 @@
 
 #include <boost/xpressive/proto/proto.hpp>
 #include <boost/xpressive/proto/transform/fold.hpp>
-#include <boost/xpressive/proto/transform/apply.hpp>
+#include <boost/xpressive/proto/transform/when.hpp>
 
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/plus.hpp>
@@ -36,28 +36,20 @@
 namespace mythos { namespace proto_detail
 {
     using namespace boost::proto;
+    using boost::proto::transform::when;
+
     namespace mplpl = boost::mpl::placeholders;
 
     template <typename G>
     struct grammar_count
         : or_<
-            transform::always<
-                G,
-                boost::mpl::int_<1>
-            >,
-            transform::always<
-                terminal<_>,
-                boost::mpl::int_<0>
-            >,
-            transform::fold<
-                nary_expr<
-                    _,
-                    transform::apply2<
-                        vararg<grammar_count<G> >,
-                        boost::mpl::plus<mplpl::_1, mplpl::_2>
-                    >
-                >,
-                boost::mpl::int_<0>
+            when<G, boost::mpl::int_<1> >,
+            when<terminal<_>, boost::mpl::int_<0> >,
+            when<
+                nary_expr<_, vararg<grammar_count<G> > >,
+                fold<
+                    _, boost::mpl::int_<0>, boost::mpl::plus<_arg0, _state>
+                >
             >
         >
     {};

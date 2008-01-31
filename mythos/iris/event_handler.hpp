@@ -31,7 +31,7 @@
 
 #include <mythos/support/safe_bool.hpp>
 
-#include <boost/xpressive/proto/traits.hpp>
+#include <boost/xpressive/proto/proto.hpp>
 
 #include <boost/intrusive/list_hook.hpp>
 
@@ -48,10 +48,13 @@ namespace mythos { namespace iris
         }
     }
 
-    // TODO: event_handlers should be considered iris primitives
     // TODO: get rid of parentheses needed due to ',' operator
+    // TODO: use of proto::extends adds an extra (unused) pointer to event_handler.  get rid of it
     struct event_handler
+        : boost::proto::extends<boost::proto::terminal<event_handler *>::type, event_handler>
     {
+        typedef boost::proto::extends<boost::proto::terminal<event_handler *>::type, event_handler> base_type;
+
         typedef boost::intrusive::list_member_hook<
             boost::intrusive::link_mode<boost::intrusive::auto_unlink>
         > hook_type;

@@ -42,8 +42,6 @@
 
 #include <wx/wx.h>
 
-#include <exception>
-
 namespace mythos { namespace gaia
 {
     namespace detail

@@ -122,11 +122,17 @@ namespace myapp
         window next_tip = button(increment_tip(tip, tip_n, dlog))[ hcenter["Next Tip"] ];
         window done = button(boost::lambda::bind(destroy_window, dlog))[ hcenter["Done"] ];
 
-        layout(dlog) =
-            col1[ gaia::image(vw) ] | col2[ "Tip of the Day:"                       ]
-                                    | col2[ text(tip, khaos::default_font(), 40, 7) ]
+BOOST_MPL_ASSERT((
+        boost::proto::matches<
+            boost::proto::literal<int const&>,
+            boost::proto::if_<boost::is_same<boost::proto::_arg, int>()>
+        >
+));
+        layout(dlog) = gaia::image(vw) | "Tip of the Day:";
+            //col1[ gaia::image(vw) ] | col2[ "Tip of the Day:"                       ]
+/*                                    | col2[ text(tip, khaos::default_font(), 40, 7) ]
                                     | col2[ "See tips on startup:" | checkbox(v)    ]
-                                    | col2[ next_tip               | right[done]    ]
+                                    | col2[ next_tip               | right[done]    ]*/
             ;
 
         dlog.events() = iris::on::paint[paint_bgnd()];
@@ -161,7 +167,6 @@ namespace myapp
 
         mainframe = nyx::create_toplevel_window("My window", 200, 200, 200, 200);
 
-        // FIXME: labels should be centered
         window
             do_dlog = button(show_dialog)[ hcenter["Show Dialog"] ],
             quit = button(quit_prog)[ hcenter["Quit"] ]
@@ -174,7 +179,8 @@ namespace myapp
             ;
 
         extra = (iris::on::mouse_move[set_mloc_str()], iris::on::paint[paint_bgnd()]);
-        mainframe.connect(extra);
+//        mainframe.connect(extra);
+        mainframe.events() = (mainframe.events(), extra);
 
         show_window(mainframe);
     }
