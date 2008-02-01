@@ -26,8 +26,7 @@
 #define MYTHOS_SUPPORT_PROTO_DETAIL_GRAMMAR_LIST_HPP
 
 #include <boost/xpressive/proto/proto.hpp>
-#include <boost/xpressive/proto/transform/fold.hpp>
-#include <boost/xpressive/proto/transform/when.hpp>
+#include <boost/xpressive/proto/transform.hpp>
 
 #include <boost/mpl/list.hpp>
 #include <boost/mpl/end.hpp>
@@ -41,17 +40,34 @@ namespace mythos { namespace proto_detail
 
     namespace mplpl = boost::mpl::placeholders;
 
-    template <typename G>
+    struct make_list : callable
+    {
+        template <typename S> struct result;
+
+        template <typename This, typename Expr, typename State, typename Visitor>
+        struct result<This(Expr, State, Visitor)>
+        {
+            typedef boost::mpl::list<typename boost::proto::result_of::arg<Expr>::type> type;
+        };
+
+        template<typename Expr, typename State, typename Visitor>
+        typename result<make_list(Expr, State, Visitor)>::type
+        operator ()(Expr const &expr, State const &, Visitor &) const
+        {
+            return typename result<make_list(Expr, State, Visitor)>::type();
+        }
+    };
+
+    template <typename G, typename C = callable>
     struct grammar_list
         : or_<
-            when<G, boost::mpl::list<_arg0> >,
-            when<terminal<_>, boost::mpl::list<> >,
-            when<
-                nary_expr<_, vararg<grammar_list<G> > >,
-                boost::mpl::insert_range<
-                    _state,
-                    boost::mpl::end<_state>,
-                    _arg0
+            when<G, make_list>,
+            when<terminal<_>, boost::mpl::list<>()>,
+            otherwise<
+                fold<
+                    _,
+                    boost::mpl::list<>(),
+                    boost::mpl::insert_range<_state, boost::mpl::end<_state>, grammar_list<G> >()
                 >
             >
         >

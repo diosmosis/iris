@@ -40,9 +40,7 @@ namespace mythos { namespace iris
     // metafunctions
     template <typename N>
     struct is_event_term
-        : boost::proto::if_<
-            boost::is_same<N, boost::proto::result_of::arg<boost::mpl::_> >
-        >
+        : boost::proto::if_<boost::is_same<N, boost::proto::_arg0>()>
     {};
 
     template <typename N>

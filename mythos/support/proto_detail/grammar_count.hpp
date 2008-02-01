@@ -26,8 +26,7 @@
 #define MYTHOS_SUPPORT_PROTO_DETAIL_GRAMMAR_COUNT_HPP
 
 #include <boost/xpressive/proto/proto.hpp>
-#include <boost/xpressive/proto/transform/fold.hpp>
-#include <boost/xpressive/proto/transform/when.hpp>
+#include <boost/xpressive/proto/transform.hpp>
 
 #include <boost/mpl/int.hpp>
 #include <boost/mpl/plus.hpp>
@@ -40,16 +39,13 @@ namespace mythos { namespace proto_detail
 
     namespace mplpl = boost::mpl::placeholders;
 
-    template <typename G>
+    template <typename G, typename C = callable>
     struct grammar_count
         : or_<
-            when<G, boost::mpl::int_<1> >,
-            when<terminal<_>, boost::mpl::int_<0> >,
-            when<
-                nary_expr<_, vararg<grammar_count<G> > >,
-                fold<
-                    _, boost::mpl::int_<0>, boost::mpl::plus<_arg0, _state>
-                >
+            when<G, boost::mpl::int_<1>()>,
+            when<terminal<_>, boost::mpl::int_<0>()>,
+            otherwise<
+                fold<_, boost::mpl::int_<0>(), boost::mpl::plus<grammar_count<G>, _state>()>
             >
         >
     {};

@@ -31,6 +31,7 @@
 #include <mythos/nyx/generate_window.hpp>
 
 #include <boost/xpressive/proto/proto.hpp>
+#include <boost/xpressive/proto/transform.hpp>
 
 #include <boost/mpl/placeholders.hpp>
 
