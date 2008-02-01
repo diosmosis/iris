@@ -44,6 +44,16 @@
 
 namespace mythos { namespace gaia
 {
+    namespace detail
+    {
+        static HWND hwnd_of(nyx::window const& w)
+        {
+            khaos::window * kw = w.khaos_window();
+
+            return kw ? *static_cast<HWND *>(khaos::handle_of(kw)) : NULL;
+        }
+    }
+
     // label.hpp
     namespace detail
     {
@@ -129,12 +139,70 @@ namespace mythos { namespace gaia
     // button.hpp
     nyx::window button(boost::function<void ()> const& action, nyx::window const& p)
     {
+        HWND phwnd = detail::hwnd_of(p);
+
         HWND hwnd = ::CreateWindow(
             "BUTTON",
             "",
             BS_PUSHBUTTON | WS_CHILD,
             0, 0, 12, 6,
+            phwnd ? phwnd : khaos::detail::get_messagewin(),
+            NULL,
+            khaos::detail::get_hinstance(),
+            NULL
         );
+
+        // create window
+        nyx::window win = nyx::foreign_create_window(&hwnd);
+
+        // create event_handler
+        win.events() = on::l_button_down[boost::lambda::bind(action)];
+
+        return win;
+    }
+
+    namespace detail
+    {
+        struct set_checkbox_value
+        {
+            set_checkbox_value(bool & v_) : v(v_) {}
+
+            void operator()(nyx::point const&) const
+            {
+                v = !v;
+            }
+
+            bool & v;
+        };
+    }
+
+    nyx::window checkbox(bool & value, nyx::window const& p)
+    {
+        HWND phwnd = detail::hwnd_of(p);
+
+        HWND hwnd = ::CreateWindow(
+            "BUTTON",
+            "",
+            BS_CHECKBOX,
+            0, 0, 10, 10, // FIXME: Need default size
+            phwnd ? phwnd : khaos::detail::get_messagewin(),
+            NULL,
+            khaos::detail::get_hinstance(),
+            NULL
+        );
+
+        // set checkbox value
+        ::SendMessage(hwnd, BM_SETCHECK, value ? BST_CHECKED : BST_UNCHECKED, 0);
+
+        // create window
+        nyx::window win = nyx::foreign_create_window(&hwnd);
+
+        // create event_handler
+        win.events() = (on::l_button_down | on::l_button_up)[detail::set_checkbox_value(value)];
+
+        return win;
     }
 }}
+
+MYTHOS_KHAOS_ANNEX_IMPLEMENT_PLUGIN(mythos::gaia::detail::plugin_impl);
 
