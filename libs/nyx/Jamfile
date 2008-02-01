@@ -41,8 +41,10 @@ lib nyx
     $(SOURCES)
     $(MYTHOS_ROOT)/libs/khaos//khaos
     :
+    <link>shared:<define>MYTHOS_NYX_DYN_LINK
     :
     :
     <include>$(MYTHOS_ROOT)
+    <link>shared:<define>MYTHOS_NYX_DYN_LINK
     ;
 

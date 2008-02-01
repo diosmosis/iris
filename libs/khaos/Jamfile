@@ -1,7 +1,7 @@
 #
 #    This file is part of mythos.
 #
-#    Copyright (c) 2007 Benaka Moorthi
+#    Copyright (c) 2007-2008 Benaka Moorthi
 #
 #    Permission is hereby granted, free of charge, to any person obtaining a copy
 #    of this software and associated documentation files (the "Software"), to deal
@@ -67,12 +67,14 @@ lib khaos
     <define>$(MYTHOS_DEF)
     <define>MYTHOS_KHAOS_PLATFORM_CONFIG_HPP=$(MYTHOS_CONFIG)
     <include>$(EXTRA_INCLUDE)
+    <link>shared:<define>MYTHOS_KHAOS_DYN_LINK
     :
     :
     <define>$(MYTHOS_DEF)
     <define>MYTHOS_KHAOS_PLATFORM_CONFIG_HPP=$(MYTHOS_CONFIG)
     <include>$(MYTHOS_ROOT)
     <include>$(EXTRA_INCLUDE)
+    <link>shared:<define>MYTHOS_KHAOS_DYN_LINK
     ;
 
 alias annex

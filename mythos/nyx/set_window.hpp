@@ -1,7 +1,7 @@
 /*
     This file is part of mythos.
 
-    Copyright (c) 2007 Benaka Moorthi
+    Copyright (c) 2007-2008 Benaka Moorthi
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
