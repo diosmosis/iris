@@ -56,9 +56,10 @@ namespace mythos
     // pixel/number of bytes
     template <typename P, int N>
     struct byte_aligned_pixel
-        : boost::gil::detail::homogeneous_color_base_impl<
+        : boost::gil::detail::homogeneous_color_base<
             typename boost::gil::channel_type<P>::type,
-            typename P::layout_t
+            typename P::layout_t,
+            boost::mpl::size<typename P::layout_t::color_space_t>::value
         >
     {
         typedef typename boost::gil::channel_type<P>::type channel_t;

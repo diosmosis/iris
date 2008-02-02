@@ -34,7 +34,7 @@
 
 #include <boost/noncopyable.hpp>
 
-// NOTE: coordinates are related to parent window
+// NOTE: coordinates are related to parent window (unless the window is toplevel)
 namespace mythos { namespace khaos
 {
     // TODO: use constant-time size() in intrusive list of child windows
@@ -100,14 +100,20 @@ namespace mythos { namespace khaos
     MYTHOS_KHAOS_DECL void hide_window(window * win);
     MYTHOS_KHAOS_DECL bool is_shown(window * win);
 
+    // FIXME: this should be 'reparent'
     // sets the parent of a child window
     MYTHOS_KHAOS_DECL void set_parent(window * win, window * parent);
 
     MYTHOS_KHAOS_DECL void modalize(window * win);
 
-    // tells if the supplied window is a mythos window or a wrapped foreign
-    // window
+    // tells if the supplied window is a mythos window.  calling this with windows created by
+    // create_..._window functions will return true.  calling this w/ windows created by
+    // foreign_create_window may return true or false depending on the particular backend.
     MYTHOS_KHAOS_DECL bool is_mythos_window(window * win);
+
+    // counting functions
+    MYTHOS_KHAOS_DECL size_t toplevel_window_count();
+    MYTHOS_KHAOS_DECL size_t window_count();
 }}
 
 #endif // #if !defined( MYTHOS_KHAOS_WINDOW_HPP )

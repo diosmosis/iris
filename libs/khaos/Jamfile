@@ -39,7 +39,7 @@ if $(MYTHOS_PLATFORM) = x11
     lib z ;
 
     EXTRA_SOURCES = freetype.cpp ;
-    EXTRA_INCLUDE = /usr/include/freetype2 ;
+    EXTRA_INCLUDE = /usr/include/freetype2 ; # FIXME: need to add a freetype jamfile
     LIBS = X11 freetype fontconfig z ;
     ANNEX_LIBS = dl ;
 }

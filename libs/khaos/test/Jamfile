@@ -26,15 +26,23 @@ import testing ;
 
 project 
     : requirements
-      <library>/mythos//mythos
+      <library>/mythos/khaos//khaos
       <include>$(MYTHOS_ROOT) # this should not be neccessary
     ;
 
+# run sources : args : input-files : req : name : default-build
+
 test-suite "khaos" :
-    [ run event_loop.cpp ]
+#    [ run event_loop.cpp ] # $(BOOST_ROOT)/libs/thread/build//boost_thread
     [ run events.cpp ]
-    [ run fonts.cpp ]
-    [ run main.cpp ]
+    [ run font.cpp ]
+    [ run main.cpp
+            : arg1 "\"a r g 2\"" arg3
+            :
+            : <define>MYTHOS_KHAOS_MAIN_TEST_NAME=bin/main.test/gcc-4.1/release/main # FIXME: giant hack, must be fixed
+            : main
+            : release
+    ]
     [ run module.cpp ]
     [ run window.cpp ]
     ;

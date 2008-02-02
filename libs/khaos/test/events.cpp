@@ -41,9 +41,6 @@
 
 #include <boost/detail/lightweight_test.hpp>
 
-#include <iostream>
-//#include "mythos_test.hpp"
-
 #define MYTHOS_KHAOS_TEST_WINW 200
 #define MYTHOS_KHAOS_TEST_WINH 200
 
@@ -100,7 +97,7 @@ struct generic_event_handler
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
-void paint_raise_test()
+static void paint_raise_test()
 {
     window_fixture fixture;
 
@@ -113,7 +110,7 @@ void paint_raise_test()
 
 ////////////////////////////////////////////////////////////////////////////////////////
 template <typename E>
-void point_event_raise_test(int x, int y)
+static void point_event_raise_test(int x, int y)
 {
     window_fixture fixture;
 
@@ -124,7 +121,7 @@ void point_event_raise_test(int x, int y)
     E::raise(fixture.win, pt);
 }
 
-int run_tests(int argc, char ** argv)
+static int run_tests(int argc, char ** argv)
 {
     paint_raise_test();
     point_event_raise_test<mouse_move>(50, 25);

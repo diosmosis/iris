@@ -28,6 +28,7 @@
 #include <mythos/khaos/config.hpp>
 #include <mythos/khaos/event_loop.hpp>
 #include <mythos/khaos/module.hpp>
+#include <mythos/khaos/window.hpp>
 
 // TODO: if there's a way to get nCmdShow w/o a WinMain, this can be changed to
 // #if defined(BOOST_MSVC)
@@ -59,7 +60,9 @@
                                                                     \
         delete [] args;                                             \
                                                                     \
-        int r = mythos::khaos::event_loop();                        \
+        int r = 0;                                                  \
+        if (mythos::khaos::toplevel_window_count())                 \
+            r = mythos::khaos::event_loop();                        \
                                                                     \
         mythos::khaos::cleanup();                                   \
         mythos::khaos::unload_modules();                            \
@@ -127,7 +130,9 @@ namespace mythos { namespace khaos
         if (init(argc, argv) == EXIT_FAILURE)                       \
             return EXIT_FAILURE;                                    \
                                                                     \
-        int r = mythos::khaos::event_loop();                        \
+        int r = EXIT_SUCCESS;                                       \
+        if (mythos::khaos::toplevel_window_count())                 \
+            r = mythos::khaos::event_loop();                        \
                                                                     \
         mythos::khaos::cleanup();                                   \
         mythos::khaos::unload_modules();                            \

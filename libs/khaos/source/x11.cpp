@@ -79,7 +79,7 @@ static int const x11_endian = LSBFirst;
 #   error no endian definition
 #endif
 
-static boost::detail::atomic_count toplevel_windows(0);
+static boost::detail::atomic_count toplevel_windows(0), windows(0);
 
 static Display * x11_display = NULL;
 static XContext x11_user_data_context;
@@ -101,6 +101,8 @@ namespace mythos { namespace khaos
             if (is_toplevel)
                 ++::toplevel_windows;
 
+            ++::windows;
+
             detail::set_buffer(this);
         }
 
@@ -114,6 +116,8 @@ namespace mythos { namespace khaos
 
                 --::toplevel_windows;
             }
+
+            --::windows;
         }
 
         Window handle;
@@ -768,6 +772,17 @@ namespace mythos { namespace khaos
     bool is_mythos_window(window * win)
     {
         return true;
+    }
+
+    // window counting
+    size_t toplevel_window_count()
+    {
+        return ::toplevel_windows;
+    }
+
+    size_t window_count()
+    {
+        return ::windows;
     }
 
     // event/button.hpp
