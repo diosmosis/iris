@@ -72,7 +72,7 @@ namespace mythos { namespace khaos
     struct msw_window : window
     {
         msw_window(HWND hwnd, window * p, bool top, int x_, int y_, int w, int h)
-            : window(p, top), handle(hwnd), x(x_), y(y_), width(w), height(h), wrapped_proc(NULL)
+            : window(p, top), handle(hwnd), x(x_), y(y_), width(w), height(h), tlx(0), tly(0), wrapped_proc(NULL)
         {
             detail::set_buffer(this);
         }

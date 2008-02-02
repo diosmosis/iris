@@ -127,10 +127,15 @@ namespace mythos
             return pixel_impl() == p;
         }
 
+        bool operator == (byte_aligned_pixel const& p) const
+        {
+            return pixel_impl() == p.pixel_impl();
+        }
+
         template <typename P0>
         bool operator != (P0 const& p) const
         {
-            return pixel_impl() != p;
+            return !(*this == p);
         }
 
         // homogeneous pixels have operator[]

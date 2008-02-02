@@ -196,7 +196,7 @@ namespace myapp
                     {
                         std::cout << "--gaia option must specify toolkit" << std::endl;
 
-                        return EXIT_SUCCESS;
+                        return EXIT_FAILURE;
                     }
 
                     toolkit = argv[i];

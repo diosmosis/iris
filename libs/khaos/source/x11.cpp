@@ -96,7 +96,7 @@ namespace mythos { namespace khaos
     struct x11_window : window
     {
         x11_window(Window hnd, window * p, bool top, int x_, int y_, int w, int h)
-            : window(p, top), handle(hnd), x(x_), y(y_), width(w), height(h), shown(false)
+            : window(p, top), handle(hnd), x(x_), y(y_), width(w), height(h), tlx(0), tly(0), shown(false)
         {
             if (is_toplevel)
                 ++::toplevel_windows;

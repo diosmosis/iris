@@ -34,6 +34,16 @@ namespace mythos { namespace khaos
 
         int x, y;
     };
+
+    inline bool operator == (point const& lhs, point const& rhs)
+    {
+        return lhs.x == rhs.x && lhs.y == rhs.y;
+    }
+
+    inline bool operator != (point const& lhs, point const& rhs)
+    {
+        return lhs.x != rhs.x || lhs.y != rhs.y;
+    }
 }}
 
 #endif // #if !defined( MYTHOS_KHAOS_POINT_HPP )
