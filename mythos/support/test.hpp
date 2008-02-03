@@ -22,46 +22,21 @@
     THE SOFTWARE.
 */
 
-#include <boost/preprocessor/stringize.hpp>
+#if !defined( MYTHOS_SUPPORT_TEST_HPP )
+#define MYTHOS_SUPPORT_TEST_HPP
 
-#include <string>
+#include <mythos/khaos/main.hpp>
 
-#define BOOST_TEST_MODULE khaos implement main test
-#include <mythos/support/test.hpp>
+#define BOOST_TEST_NO_MAIN
+#include <boost/test/unit_test.hpp>
 
-#if !defined(MYTHOS_KHAOS_MAIN_TEST_NAME)
-#   error MYTHOS_KHAOS_MAIN_TEST_NAME should specify test exe's name
-#endif
+#define MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN()                                          \
+    static int main_impl(int argc, char ** argv)                                    \
+    {                                                                               \
+        return ::boost::unit_test::unit_test_main(&init_unit_test, argc, argv);     \
+    }                                                                               \
+                                                                                    \
+    MYTHOS_KHAOS_IMPLEMENT_MAIN(main_impl)
 
-static int argc = 0;
-static char ** argv = NULL;
-
-// test should be run w/ the command line: arg1 "a r g 2" arg3
-BOOST_AUTO_TEST_CASE(commnd_line_test)
-{
-    std::string exename = BOOST_PP_STRINGIZE(MYTHOS_KHAOS_MAIN_TEST_NAME);
-
-    BOOST_MESSAGE("MYTHOS_KHAOS_MAIN_TEST_NAME = " << exename);
-
-    // test argv & argc
-    BOOST_REQUIRE(argv != NULL);
-    BOOST_REQUIRE(argc == 4);
-
-    // test arguments
-    BOOST_CHECK_EQUAL(std::string(argv[0]), exename);
-
-    BOOST_CHECK_EQUAL(std::string(argv[1]), "arg1");
-    BOOST_CHECK_EQUAL(std::string(argv[2]), "a r g 2");
-    BOOST_CHECK_EQUAL(std::string(argv[3]), "arg3");
-}
-
-boost::unit_test::test_suite * init_unit_test_suite(int argc_, char * argv_[])
-{
-    ::argc = argc_;
-    ::argv = argv_;
-
-    return 0;
-}
-
-MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN();
+#endif // #if !defined( MYTHOS_SUPPORT_TEST_HPP )
 

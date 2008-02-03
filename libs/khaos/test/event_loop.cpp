@@ -24,7 +24,6 @@
 
 #include <mythos/khaos/window.hpp>
 #include <mythos/khaos/event_loop.hpp>
-#include <mythos/khaos/main.hpp>
 
 #include <boost/optional.hpp>
 
@@ -32,7 +31,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/condition.hpp>
 
-#include <boost/detail/lightweight_test.hpp>
+#define BOOST_TEST_MODULE khaos event_loop test
+#include <mythos/support/test.hpp>
 
 using namespace mythos::khaos;
 
@@ -65,7 +65,7 @@ static bool event_loop_stopped()
     return !lock.timed_lock(xt);
 }
 
-static int run_tests(int argc, char ** argv)
+BOOST_AUTO_TEST_CASE(event_loop_test)
 {
     win = create_toplevel_window("some window", 0, 0, 200, 200);
     window * child1 = create_child_window(0, 0, 50, 50, win);
@@ -75,10 +75,7 @@ static int run_tests(int argc, char ** argv)
 
     window * win2 = create_toplevel_window("another window", 0, 0, 200, 200);
 
-    BOOST_TEST(win && child1 && child2 && child3 && child4);
-
-    if (!(win && child1 && child2 && child3 && child4))
-        return boost::report_errors();
+    BOOST_REQUIRE(win && child1 && child2 && child3 && child4);
 
     boost::timed_mutex::scoped_lock elt_lock(elt_mutex);
 
@@ -87,43 +84,33 @@ static int run_tests(int argc, char ** argv)
 
     // wait till mutex is locked
     boost::xtime xt = {5, 0};
-    if (!cond.timed_wait(elt_lock, xt))
-    {
-        std::cout << "event loop failed to start" << std::endl;
-
-        return 1;
-    }
+    BOOST_REQUIRE_MESSAGE(cond.timed_wait(elt_lock, xt), "event loop failed to start");
 
     // make sure destroying child windows doesn't stop the event loop
     destroy_window(child2);
-    BOOST_TEST(event_loop_running());
+    BOOST_CHECK(event_loop_running());
 
     destroy_window(child4);
-    BOOST_TEST(event_loop_running());
+    BOOST_CHECK(event_loop_running());
 
     // make sure destroying a toplevel window doesn't stop the event loop, unless it is the only toplevel
     // window left
     destroy_window(win2);
-    BOOST_TEST(event_loop_running());
+    BOOST_CHECK(event_loop_running());
 
     // make sure destroying the last toplevel window active does stop the event loop
     destroy_window(win);
-    BOOST_TEST(event_loop_stopped());
+    BOOST_CHECK(event_loop_stopped());
 
     // make sure the result is correct
-    BOOST_TEST(event_loop_result);
-
-    if (!event_loop_result)
-        return boost::report_errors();
+    BOOST_REQUIRE(event_loop_result);
 
 #if defined(MYTHOS_WINDOWS)
-    BOOST_TEST(event_loop_result != 0);
+    BOOST_CHECK(event_loop_result != 0);
 #else
-    BOOST_TEST(event_loop_result == EXIT_SUCCESS);
+    BOOST_CHECK(event_loop_result == EXIT_SUCCESS);
 #endif
-
-    return boost::report_errors();
 }
 
-MYTHOS_KHAOS_IMPLEMENT_MAIN(run_tests);
+MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN();
 

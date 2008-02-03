@@ -97,6 +97,7 @@ namespace mythos { namespace khaos
             return extra_data ? &font::extra_data : 0;
         }
 
+        // FIXME: should be named pimpl
         void * extra_data;
     };
 
@@ -114,8 +115,8 @@ namespace mythos { namespace khaos
     // height if vertical font, width if horizontal
     MYTHOS_KHAOS_DECL int line_length(font const& f);
 
-    // FIXME: should return bool
     // this should be its own lib...
+    // will always find a font
     MYTHOS_KHAOS_DECL void find_font(
         font & f,
         std::string const& name,

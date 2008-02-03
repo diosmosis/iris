@@ -34,17 +34,36 @@
 #include <mythos/khaos/event/reconfigure.hpp>
 
 #include <mythos/khaos/window.hpp>
-#include <mythos/khaos/main.hpp>
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 
-#include <boost/detail/lightweight_test.hpp>
+#define BOOST_TEST_MODULE khaos events test
+#include <mythos/support/test.hpp>
 
 #define MYTHOS_KHAOS_TEST_WINW 200
 #define MYTHOS_KHAOS_TEST_WINH 200
 
+#define MYTHOS_KHAOS_POINT_EVENT_TEST(name)                         \
+    BOOST_FIXTURE_TEST_CASE(name ## _raise_test, window_fixture)    \
+    {                                                               \
+        point pt(50, 25);                                           \
+                                                                    \
+        win->handler = generic_event_handler<name, point>(pt);      \
+                                                                    \
+        name::raise(win, pt);                                       \
+    }
+
 using namespace mythos::khaos;
+
+namespace mythos { namespace khaos
+{
+    inline std::ostream & operator << (std::ostream & os, point const& pt)
+    {
+        os << '(' << pt.x << ", " << pt.y << ')';
+        return os;
+    }
+}}
 
 struct window_fixture
 {
@@ -71,19 +90,18 @@ struct generic_event_handler
     template <typename T>
     void operator()(T const& x, typename boost::disable_if<boost::is_same<T, image_view> >::type * d = 0) const
     {
-        BOOST_TEST(x == expected);
+        BOOST_CHECK_EQUAL(x, expected);
     }
 
     template <typename T>
     void operator()(T const& x, typename boost::enable_if<boost::is_same<T, image_view> >::type * d = 0) const
     {
-        BOOST_TEST(boost::gil::equal_pixels(x, expected));
+        BOOST_CHECK(boost::gil::equal_pixels(x, expected));
     }
 
     bool operator()(int et, void * ei) const
     {
-        //BOOST_CHECK_MESSAGE(et == E::value, "Unexpected event: " << et);
-        BOOST_TEST(et == E::value);
+        BOOST_CHECK_EQUAL(et, E::value);
 
         if (et == E::value)
         {
@@ -97,45 +115,26 @@ struct generic_event_handler
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////
-static void paint_raise_test()
+BOOST_FIXTURE_TEST_CASE(paint_raise_test, window_fixture)
 {
-    window_fixture fixture;
-
     image img(MYTHOS_KHAOS_TEST_WINW, MYTHOS_KHAOS_TEST_WINH);
 
-    fixture.win->handler = generic_event_handler<paint, image_view>(boost::gil::view(img));
+    win->handler = generic_event_handler<paint, image_view>(boost::gil::view(img));
 
-    paint::raise(fixture.win);
+    paint::raise(win);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-template <typename E>
-static void point_event_raise_test(int x, int y)
-{
-    window_fixture fixture;
+MYTHOS_KHAOS_POINT_EVENT_TEST(mouse_move)
+MYTHOS_KHAOS_POINT_EVENT_TEST(l_button_down)
+MYTHOS_KHAOS_POINT_EVENT_TEST(m_button_down)
+MYTHOS_KHAOS_POINT_EVENT_TEST(r_button_down)
+MYTHOS_KHAOS_POINT_EVENT_TEST(l_button_up)
+MYTHOS_KHAOS_POINT_EVENT_TEST(m_button_up)
+MYTHOS_KHAOS_POINT_EVENT_TEST(r_button_up)
+MYTHOS_KHAOS_POINT_EVENT_TEST(resize)
+MYTHOS_KHAOS_POINT_EVENT_TEST(reconfigure)
 
-    point pt(x, y);
-
-    fixture.win->handler = generic_event_handler<E, point>(pt);
-
-    E::raise(fixture.win, pt);
-}
-
-static int run_tests(int argc, char ** argv)
-{
-    paint_raise_test();
-    point_event_raise_test<mouse_move>(50, 25);
-    point_event_raise_test<l_button_down>(50, 25);
-    point_event_raise_test<m_button_down>(50, 25);
-    point_event_raise_test<r_button_down>(50, 25);
-    point_event_raise_test<l_button_up>(50, 25);
-    point_event_raise_test<m_button_up>(50, 25);
-    point_event_raise_test<r_button_up>(50, 25);
-    point_event_raise_test<resize>(50, 25);
-    point_event_raise_test<reconfigure>(50, 25);
-
-    return boost::report_errors();
-}
-
-MYTHOS_KHAOS_IMPLEMENT_MAIN(run_tests);
+////////////////////////////////////////////////////////////////////////////////////////
+MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN();
 

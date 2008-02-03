@@ -307,7 +307,7 @@ namespace mythos { namespace khaos
                 32,
                 sub_vw.pixels().row_size()
             );
-
+#error img is null
             // put image
             XPutImage(::x11_display, xwin->handle, gc, img, 0, 0, 0, 0, w, h);
 

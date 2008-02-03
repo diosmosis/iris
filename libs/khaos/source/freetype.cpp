@@ -33,7 +33,7 @@
 
 #include <map>
 #include <stdexcept>
-
+#include <iostream>
 #include <fontconfig/fontconfig.h>
 
 #include <ft2build.h>
@@ -51,7 +51,13 @@ namespace mythos { namespace khaos
 
     struct ft_font_extra
     {
-        ft_font_extra() : height(0), width(0), ascender(0), descender(0) {}
+        ft_font_extra() : face(NULL), height(0), width(0), ascender(0), descender(0) {}
+
+        ~ft_font_extra()
+        {
+            if (face)
+                FT_Done_Face(face);
+        }
 
         FT_Face face;
         int height, width, ascender, descender;
@@ -73,7 +79,7 @@ namespace mythos { namespace khaos
 
             // FIXME: shouldn't use find_font for this
             // load default font
-            find_font(::default_font, "Monospace", 12);
+            find_font(::default_font, "nonexistant font family", 12);
         }
 
         void unload()
@@ -107,14 +113,13 @@ namespace mythos { namespace khaos
         }
     }
 
-    font::font() : extra_data(0) {}
+    font::font() : extra_data(new ft_font_extra()) {}
 
     font::~font()
     {
-        if (!extra_data)
-            return;
+        BOOST_ASSERT(extra_data);
 
-        FT_Done_Face(static_cast<ft_font_extra *>(extra_data)->face);
+        delete static_cast<ft_font_extra *>(extra_data);
     }
 
     void * handle_of(font const& f)
@@ -283,8 +288,7 @@ namespace mythos { namespace khaos
             FcPatternDestroy(real_pattern);
 
             // create font
-            ft_font_extra * extra;
-            f.extra_data = extra = new ft_font_extra();
+            ft_font_extra * extra = static_cast<ft_font_extra *>(f.extra_data);
 
             extra->face = face;
 

@@ -26,6 +26,7 @@ import testing ;
 
 project 
     : requirements
+      <library>$(BOOST_ROOT)/libs/test/build//boost_unit_test_framework
       <library>/mythos/khaos//khaos
       <include>$(MYTHOS_ROOT) # this should not be neccessary
     ;

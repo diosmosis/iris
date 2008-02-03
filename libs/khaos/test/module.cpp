@@ -22,11 +22,11 @@
     THE SOFTWARE.
 */
 
-#include <mythos/khaos/main.hpp>
 #include <mythos/khaos/module.hpp>
 #include <mythos/khaos/register_module.hpp>
 
-#include <boost/detail/lightweight_test.hpp>
+#define BOOST_TEST_MODULE khaos module test
+#include <mythos/support/test.hpp>
 
 using namespace mythos::khaos;
 
@@ -35,7 +35,7 @@ static bool module_unloaded = false; // TODO: need a way to test that this is tr
 
 struct my_module
 {
-    void load(int * argc, char ** argv) const
+    void load(int * argc, char *** argv) const
     {
         module_loaded = true;
     }
@@ -46,14 +46,12 @@ struct my_module
     }
 };
 
-static int run_tests()
+BOOST_AUTO_TEST_CASE(module_loaded_test)
 {
-    BOOST_TEST(module_loaded);
-
-    return boost::report_errors();
+    BOOST_CHECK(module_loaded);
 }
 
 MYTHOS_KHAOS_REGISTER_MODULE(my_module);
 
-MYTHOS_KHAOS_IMPLEMENT_MAIN(run_tests);
+MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN()
 

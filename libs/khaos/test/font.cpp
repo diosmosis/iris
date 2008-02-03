@@ -22,41 +22,36 @@
     THE SOFTWARE.
 */
 
-#include <mythos/khaos/main.hpp>
 #include <mythos/khaos/font.hpp>
 
-#include <boost/detail/lightweight_test.hpp>
+#define BOOST_TEST_MODULE khaos font test
+#include <mythos/support/test.hpp>
 
 using namespace mythos::khaos;
 
 // FIXME: need a better test
-static void find_font_test()
+BOOST_AUTO_TEST_CASE(find_font_test)
 {
-    font f;
-    BOOST_TEST(handle_of(f));
+    font f1;
+    BOOST_CHECK(handle_of(f1));
 
-    find_font(f, "made up font name", 12);
-    BOOST_TEST(!f);
+    find_font(f1, "made up font name", 12);
+    BOOST_CHECK(f1);
 
-    find_font(f, "Times New Roman", 12);
-    BOOST_TEST(f);
+    font f2;
+    BOOST_CHECK(handle_of(f2));
+
+    find_font(f2, "Times New Roman", 12);
+    BOOST_CHECK(f2);
 }
 
-static void default_font_test()
+BOOST_AUTO_TEST_CASE(default_font_test)
 {
     font const& f = default_font();
 
-    BOOST_TEST(f);
-    BOOST_TEST(handle_of(f));
+    BOOST_CHECK(f);
+    BOOST_CHECK(handle_of(f));
 }
 
-static int run_tests(int argc, char ** argv)
-{
-    find_font_test();
-    default_font_test();
-
-    return boost::report_errors();
-}
-
-MYTHOS_KHAOS_IMPLEMENT_MAIN(run_tests);
+MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN()
 

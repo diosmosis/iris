@@ -22,8 +22,8 @@
 #    THE SOFTWARE.
 #
 
-# NOTE: put this file in $(BOOST_ROOT)/tools/build/v2/tools, then in user-config.jam
-# put using wxwidgets : path-to-wx-root : port : version : __WXETC__ : unicode/ansi or leave it absent ;
+# NOTE: put this file in $(BOOST_ROOT)/tools/build/v2/tools, then in user-config.jam put
+# using wxwidgets : path-to-wx-root : port : version : __WXETC__ : unicode/ansi or leave it absent ;
 
 import modules ;
 import feature ;
