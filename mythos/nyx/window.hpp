@@ -207,9 +207,9 @@ namespace mythos { namespace nyx
     }
 
     // is_shown
-    inline bool is_shown(window const& win)
+    inline bool is_visible(window const& win)
     {
-        return khaos::is_shown(win.khaos_window());
+        return khaos::is_visible(win.khaos_window());
     }
 
     // modalize
@@ -219,9 +219,9 @@ namespace mythos { namespace nyx
     }
 
     // set_parent
-    inline void set_parent(window const& win, window const& par)
+    inline void reparent(window const& win, window const& par)
     {
-        khaos::set_parent(win.khaos_window(), par.khaos_window());
+        khaos::reparent(win.khaos_window(), par.khaos_window());
     }
 
     // handle_event

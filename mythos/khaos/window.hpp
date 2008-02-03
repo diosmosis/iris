@@ -95,14 +95,14 @@ namespace mythos { namespace khaos
     MYTHOS_KHAOS_DECL point get_position(window * win);
     MYTHOS_KHAOS_DECL point get_size(window * win);
 
-    // show/hide/is_shown
+    // show/hide/is_visible
     MYTHOS_KHAOS_DECL void show_window(window * win);
     MYTHOS_KHAOS_DECL void hide_window(window * win);
-    MYTHOS_KHAOS_DECL bool is_shown(window * win);
 
-    // FIXME: this should be 'reparent'
-    // sets the parent of a child window
-    MYTHOS_KHAOS_DECL void set_parent(window * win, window * parent);
+    MYTHOS_KHAOS_DECL bool is_visible(window * win);
+
+    // reparent
+    MYTHOS_KHAOS_DECL void reparent(window * win, window * parent);
 
     MYTHOS_KHAOS_DECL void modalize(window * win);
 

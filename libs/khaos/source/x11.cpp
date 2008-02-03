@@ -96,7 +96,7 @@ namespace mythos { namespace khaos
     struct x11_window : window
     {
         x11_window(Window hnd, window * p, bool top, int x_, int y_, int w, int h)
-            : window(p, top), handle(hnd), x(x_), y(y_), width(w), height(h), tlx(0), tly(0), shown(false)
+            : window(p, top), handle(hnd), x(x_), y(y_), width(w), height(h), tlx(0), tly(0), mapped(false)
         {
             if (is_toplevel)
                 ++::toplevel_windows;
@@ -131,7 +131,7 @@ namespace mythos { namespace khaos
         // tlx & tly are indices into buff_impl
         int tlx, tly;
 
-        bool shown;
+        bool mapped;
 
         boost::shared_ptr<image> buff_impl;
     };
@@ -307,12 +307,16 @@ namespace mythos { namespace khaos
                 32,
                 sub_vw.pixels().row_size()
             );
-#error img is null
-            // put image
-            XPutImage(::x11_display, xwin->handle, gc, img, 0, 0, 0, 0, w, h);
 
-            img->data = 0;
-            XDestroyImage(img);
+            // FIXME: img will be null if this gets called before event_loop().  is it a bug or a quirk?
+            if (img)
+            {
+                // put image
+                XPutImage(::x11_display, xwin->handle, gc, img, 0, 0, 0, 0, w, h);
+
+                img->data = 0;
+                XDestroyImage(img);
+            }
 
             // free gc
             XFreeGC(::x11_display, gc);
@@ -552,8 +556,8 @@ namespace mythos { namespace khaos
         // set window user data
         XSaveContext(::x11_display, win, ::x11_user_data_context, (char *) result);
 
-        // map window, if a parent was supplied and is shown
-        if (rp && is_shown(rp))
+        // map window, if a parent was supplied and is mapped
+        if (rp && rp->mapped)
             show_window(result);
 
         return result;
@@ -666,10 +670,10 @@ namespace mythos { namespace khaos
         return point(static_cast<x11_window *>(win)->width, static_cast<x11_window *>(win)->height);
     }
 
-    // show/hide/is_shown
+    // show/hide/is_visible
     void show_window(window * win)
     {
-        if (static_cast<x11_window *>(win)->shown)
+        if (static_cast<x11_window *>(win)->mapped)
             return;
 
         BOOST_FOREACH(window & child, win->children)
@@ -677,12 +681,12 @@ namespace mythos { namespace khaos
 
         XMapWindow(::x11_display, static_cast<x11_window *>(win)->handle);
 
-        static_cast<x11_window *>(win)->shown = true;
+        static_cast<x11_window *>(win)->mapped = true;
     }
 
     void hide_window(window * win)
     {
-        if (!static_cast<x11_window *>(win)->shown)
+        if (!static_cast<x11_window *>(win)->mapped)
             return;
 
         BOOST_FOREACH(window & child, win->children)
@@ -690,16 +694,27 @@ namespace mythos { namespace khaos
 
         XUnmapWindow(::x11_display, static_cast<x11_window *>(win)->handle);
 
-        static_cast<x11_window *>(win)->shown = false;
+        static_cast<x11_window *>(win)->mapped = false;
     }
 
-    bool is_shown(window * win)
+    bool is_visible(window * win)
     {
-        return static_cast<x11_window *>(win)->shown;
+        x11_window * xwin = static_cast<x11_window *>(win);
+
+        if (xwin->is_toplevel)
+        {
+            return xwin->mapped;
+        }
+        else
+        {
+            return xwin->parent ? (is_visible(xwin->parent) && xwin->mapped) : xwin->mapped;
+        }
     }
 
+    // FIXME: not sure just what XReparentWindow will do to unmapped windows
+    // FIXME: rewrite this
     // sets the parent of a child window
-    void set_parent(window * win, window * parent)
+    void reparent(window * win, window * parent)
     {
         x11_window * xwin = static_cast<x11_window *>(win);
         x11_window * xpar = static_cast<x11_window *>(parent);
@@ -728,8 +743,7 @@ namespace mythos { namespace khaos
 
         XReparentWindow(::x11_display, xwin->handle, phandle, xwin->x, xwin->y);
 
-        if (!parent || xpar->shown)
-            show_window(xwin);
+        if (parent && parent->mapped && parent->
     }
 
     static bool modal_should_handle(XEvent & event)
