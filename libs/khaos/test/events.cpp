@@ -35,6 +35,8 @@
 
 #include <mythos/khaos/window.hpp>
 
+#include <boost/noncopyable.hpp>
+
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 
@@ -65,7 +67,7 @@ namespace mythos { namespace khaos
     }
 }}
 
-struct window_fixture
+struct window_fixture : boost::noncopyable
 {
     window_fixture()
     {

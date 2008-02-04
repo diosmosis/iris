@@ -56,6 +56,7 @@ static char const mythos_window_class[] = "MYTHOS_WINDOW_CLASS";
 static ATOM mythos_window_class_atom;
 
 static HINSTANCE app_instance;
+static HWND message_window;
 static int cmd_show;
 
 static mythos::khaos::font default_font;
@@ -202,7 +203,7 @@ namespace mythos { namespace khaos
 
         static bool is_mythos_window(HWND hwnd)
         {
-            return ::GetWindowClassLongPtr(hwnd, GCW_ATOM) == ::mythos_window_class_atom;
+            return ::GetClassLongPtr(hwnd, GCW_ATOM) == ::mythos_window_class_atom;
         }
 
         static msw_window * mythos_window_from_native(HWND hwnd)
@@ -344,7 +345,7 @@ namespace mythos { namespace khaos
         wcex.style = CS_VREDRAW | CS_HREDRAW | CS_OWNDC;
         wcex.lpfnWndProc = detail::WindowProc;
         wcex.cbWndExtra = sizeof(void *);
-        wcex.hInstance = app_instance;
+        wcex.hInstance = ::app_instance;
         wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);
         wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
         wcex.lpszClassName = ::mythos_window_class;
@@ -355,6 +356,23 @@ namespace mythos { namespace khaos
         if (!::mythos_window_class_atom)
         {
             throw std::runtime_error("khaos(msw): RegisterClassEx failed in mythos::entry");
+        }
+
+        // create message window
+        ::message_window = ::CreateWindow(
+            ::mythos_window_class,
+            "",
+            0,
+            0, 0, 0, 0,
+            HWND_MESSAGE,
+            NULL,
+            ::app_instance,
+            NULL
+        );
+
+        if (!::message_window)
+        {
+            throw std::runtime_error("khaos(msw): CreateWindow failed in mythos::entry");
         }
 
         // load default font
@@ -472,7 +490,7 @@ namespace mythos { namespace khaos
 
         ::SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) result);
 
-        if (is_shown(p))
+        if (is_visible(p))
             show_window(result);
 
         return result;
@@ -584,8 +602,6 @@ namespace mythos { namespace khaos
         // make sure the first toplevel window created uses nCmdShow
         static int nCmdShow = ::cmd_show;
 
-        if (is_shown(win)) return;
-
         if (win->is_toplevel)
         {
             ::ShowWindow(static_cast<msw_window *>(win)->handle, nCmdShow);
@@ -600,19 +616,20 @@ namespace mythos { namespace khaos
 
     void hide_window(window * win)
     {
-        if (!is_shown(win)) return;
-
         ::ShowWindow(static_cast<msw_window *>(win)->handle, SW_HIDE);
     }
 
-    bool is_shown(window * win)
+    bool is_visible(window * win)
     {
         return ::IsWindowVisible(static_cast<msw_window *>(win)->handle);
     }
 
-    // sets the parent of a child window
-    void set_parent(window * win, window * parent)
+    // TODO: rewrite this
+    void reparent(window * win, window * parent)
     {
+        BOOST_ASSERT(win);
+        BOOST_ASSERT(parent ? win->is_toplevel == parent->is_toplevel : true);
+
         msw_window * mswwin = static_cast<x11_window *>(win);
         msw_window * mswpar = static_cast<x11_window *>(parent);
 
@@ -622,12 +639,6 @@ namespace mythos { namespace khaos
         {
             mswwin->parent = mswpar;
             mswpar->children.push_back(*mswwin);
-
-            mswwin->is_toplevel = false;
-        }
-        else
-        {
-            mswwin->is_toplevel = true;
         }
 
         detail::set_buffer(mswwin);
@@ -636,22 +647,8 @@ namespace mythos { namespace khaos
 
         LONG_PTR style = ::GetWindowLongPtr(mswwin->handle, GWL_STYLE);
 
-        if (mswpar)
-        {
-            // set WS_CHILD style for mswwin->handle
-            ::SetWindowLongPtr(mswwin->handle, GWL_STYLE, style | WS_CHILD);
-        }
-        else
-        {
-            // unset WS_CHILD
-            ::SetWindowLongPtr(mswwin->handle, GWL_STYLE, style & WS_CHILD);
-        }
-
         // update UI state FIXME: no idea if this is done right
         ::SendMessage(mswwin->handle, WM_UPDATEUISTATE, UIS_INITIALIZE, 0);
-
-        if (!parent || is_shown(mswpar))
-            show_window(mswpar);
     }
 
     void modalize(window * win)
@@ -946,6 +943,20 @@ namespace mythos { namespace khaos
     font const& default_font()
     {
         return ::default_font;
+    }
+
+    // msw.hpp
+    namespace detail
+    {
+        void * get_messagewin()
+        {
+            return (void *) ::message_window;
+        }
+
+        void * get_hinstance()
+        {
+            return (void *) ::app_instance;
+        }
     }
 }}
 

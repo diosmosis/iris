@@ -240,11 +240,13 @@ namespace mythos { namespace khaos
             }
         }
 
+        // get the mythos window associated w/ an X11 Window
         static x11_window * mythos_window_from_native(Window w)
         {
             XPointer result;
 
-            XFindContext(::x11_display, w, ::x11_user_data_context, &result);
+            if (XFindContext(::x11_display, w, ::x11_user_data_context, &result) != 0)
+                return NULL;
 
             return (x11_window *) result;
         }
@@ -402,7 +404,7 @@ namespace mythos { namespace khaos
             case DestroyNotify:
                 delete ei.win;
 
-                if (ei.win == focus || ::toplevel_windows == 0)
+                if (ei.win == focus || toplevel_window_count() == 0)
                     ei.keep_looping = false;
 
                 break;
@@ -586,7 +588,7 @@ namespace mythos { namespace khaos
 
         if (detail::is_mythos_window(parent_handle))
             parent = detail::mythos_window_from_native(parent_handle);
-        else
+        else if (parent_handle != attributes.root)
             parent = static_cast<x11_window *>(foreign_create_window(&parent_handle));
 
         // create window
@@ -716,34 +718,34 @@ namespace mythos { namespace khaos
     // sets the parent of a child window
     void reparent(window * win, window * parent)
     {
+        BOOST_ASSERT(win);
+        BOOST_ASSERT(parent ? win->is_toplevel == parent->is_toplevel : true);
+
         x11_window * xwin = static_cast<x11_window *>(win);
         x11_window * xpar = static_cast<x11_window *>(parent);
 
         xwin->unlink();
 
         Window phandle;
+        Window rootwin = XDefaultRootWindow(::x11_display); // FIXME: should get root of win's screen
 
         if (parent)
         {
             xwin->parent = xpar;
             xpar->children.push_back(*xwin);
 
-            xwin->is_toplevel = false;
-
-            phandle = xpar->handle;
+            phandle = xpar->is_toplevel ? rootwin : xpar->handle;
         }
         else
         {
-            phandle = XDefaultRootWindow(::x11_display); // FIXME: should get root of win's screen
+            xwin->parent = NULL;
 
-            xwin->is_toplevel = true;
+            phandle = rootwin;
         }
 
         detail::set_buffer(xwin);
 
         XReparentWindow(::x11_display, xwin->handle, phandle, xwin->x, xwin->y);
-
-        if (parent && parent->mapped && parent->
     }
 
     static bool modal_should_handle(XEvent & event)
@@ -789,6 +791,9 @@ namespace mythos { namespace khaos
     }
 
     // window counting
+    // FIXME: BROKEN IN MANY, MANY WAYS.  not sure if there's any way to tell if a Window
+    // is toplevel, and not sure if there's any way to tell if a Window was created by this
+    // application, so it may not be possible to fix.
     size_t toplevel_window_count()
     {
         return ::toplevel_windows;

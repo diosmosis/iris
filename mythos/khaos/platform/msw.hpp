@@ -55,6 +55,9 @@ namespace mythos { namespace khaos { namespace detail
         // FIXME: if the range supplied to scoped_channel_value isn't inclusive this should be 65
         static unsigned char apply() { return 64; }
     };
+
+    MYTHOS_KHAOS_DECL void * get_messagewin();
+    MYTHOS_KHAOS_DECL void * get_hinstance();
 }}}
 
 #endif // #if !defined( MYTHOS_KHAOS_PLATFORM_MSW_HPP )

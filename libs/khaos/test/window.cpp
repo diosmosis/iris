@@ -38,15 +38,6 @@
 
 using namespace mythos::khaos;
 
-namespace mythos { namespace khaos
-{
-    inline std::ostream & operator << (std::ostream & os, point const& pt)
-    {
-        os << '(' << pt.x << ", " << pt.y << ')';
-        return os;
-    }
-}}
-
 struct raii_window : boost::noncopyable
 {
     raii_window(window * w) : win(w) {}
@@ -70,7 +61,7 @@ struct raii_window : boost::noncopyable
 
 BOOST_AUTO_TEST_CASE(create_toplevel_window_test)
 {
-    raii_window win = create_toplevel_window("a window", 10, 10, 300, 300);
+    raii_window win(create_toplevel_window("a window", 10, 10, 300, 300));
     BOOST_REQUIRE(win);
 
     BOOST_CHECK(win->parent == NULL);
@@ -99,7 +90,7 @@ BOOST_AUTO_TEST_CASE(create_toplevel_window_test)
 
 BOOST_AUTO_TEST_CASE(create_child_window_test)
 {
-    raii_window win = create_child_window(0, 0, 50, 50, NULL);
+    raii_window win(create_child_window(0, 0, 50, 50, NULL));
     BOOST_REQUIRE(win);
 
     BOOST_CHECK(win->parent == NULL);
@@ -123,7 +114,7 @@ BOOST_AUTO_TEST_CASE(create_child_window_test)
 
     BOOST_CHECK(win->children.size() == 1);
 
-    raii_window top = create_toplevel_window("title", 0, 0, 100, 100, NULL);
+    raii_window top(create_toplevel_window("title", 0, 0, 100, 100, NULL));
     BOOST_REQUIRE(top);
 
     show_window(top);
@@ -170,7 +161,7 @@ static void test_clipping(window * win)
 BOOST_AUTO_TEST_CASE(move_window_test)
 {
     // toplevel tests
-    raii_window top = create_toplevel_window("title", 0, 0, 50, 50);
+    raii_window top(create_toplevel_window("title", 0, 0, 50, 50));
     BOOST_REQUIRE(top);
 
     BOOST_CHECK(get_position(top) == point(0, 0));
@@ -230,7 +221,7 @@ struct check_resize
 BOOST_AUTO_TEST_CASE(resize_window_test)
 {
     // toplevel tests
-    raii_window top = create_toplevel_window("title", 0, 0, 50, 50);
+    raii_window top(create_toplevel_window("title", 0, 0, 50, 50));
     BOOST_REQUIRE(top);
 
     BOOST_CHECK(get_size(top) == point(50, 50));
@@ -245,7 +236,7 @@ BOOST_AUTO_TEST_CASE(resize_window_test)
     BOOST_CHECK(resize_event_sent);
 
     // toplevel w/ parent tests
-    raii_window top2 = create_toplevel_window("title", 0, 0, 50, 50, top);
+    raii_window top2(create_toplevel_window("title", 0, 0, 50, 50, top));
     BOOST_REQUIRE(top2);
 
     BOOST_CHECK(get_size(top2) == point(50, 50));
@@ -274,7 +265,7 @@ BOOST_AUTO_TEST_CASE(resize_window_test)
 
 BOOST_AUTO_TEST_CASE(show_hide_window_test)
 {
-    raii_window win = create_toplevel_window("abc", 0, 0, 100, 100);
+    raii_window win(create_toplevel_window("abc", 0, 0, 100, 100));
     BOOST_REQUIRE(win);
 
     BOOST_CHECK(!is_visible(win));
@@ -312,50 +303,9 @@ BOOST_AUTO_TEST_CASE(show_hide_window_test)
 
 BOOST_AUTO_TEST_CASE(reparent_test)
 {
-    raii_window extra_top = create_toplevel_window("title", 0, 0, 300, 300);
+    raii_window extra_top(create_toplevel_window("title", 0, 0, 300, 300));
 
     show_window(extra_top);
-
-    // toplevel, child
-    {
-        window * top = create_toplevel_window("abc", 50, 50, 100, 100, extra_top);
-        window * child = create_child_window(0, 0, 200, 200, extra_top);
-
-        BOOST_REQUIRE(top);
-        BOOST_REQUIRE(child);
-
-        show_window(top);
-
-        reparent(top, child);
-
-        BOOST_CHECK(!top->is_toplevel);
-        BOOST_CHECK(top->parent == child);
-        BOOST_CHECK(get_position(top) == point(50, 50));
-        BOOST_CHECK(get_size(top) == point(100, 100));
-        BOOST_CHECK(is_visible(top));
-
-        destroy_window(child);
-    }
-
-    // child, toplevel
-    {
-        // extra_top is shown, so child will be too
-        window * child = create_child_window(50, 50, 100, 100, extra_top);
-
-        // top will not be shown
-        window * top = create_toplevel_window("abc", 0, 0, 200, 200, extra_top);
-
-        BOOST_REQUIRE(child);
-        BOOST_REQUIRE(top);
-
-        reparent(child, top);
-
-        BOOST_CHECK(!child->is_toplevel);
-        BOOST_CHECK(child->parent == top);
-        BOOST_CHECK(get_position(child) == point(50, 50));
-        BOOST_CHECK(get_size(child) == point(100, 100));
-        BOOST_CHECK(!is_visible(child));
-    }
 
     // toplevel, toplevel
     {
@@ -369,11 +319,11 @@ BOOST_AUTO_TEST_CASE(reparent_test)
 
         reparent(top2, top);
 
-        BOOST_CHECK(!top2->is_toplevel);
+        BOOST_CHECK(top2->is_toplevel);
         BOOST_CHECK(top2->parent == top);
         BOOST_CHECK(get_position(top2) == point(100, 100));
         BOOST_CHECK(get_size(top2) == point(50, 50));
-        BOOST_CHECK(is_visible(top2));
+        BOOST_CHECK(!is_visible(top2));
     }
 
     // child, child
@@ -401,36 +351,36 @@ BOOST_AUTO_TEST_CASE(reparent_test)
 
 BOOST_AUTO_TEST_CASE(window_count_test)
 {
-    BOOST_CHECK(window_count() == 0);
-    BOOST_CHECK(toplevel_window_count() == 0);
+    BOOST_CHECK_EQUAL(window_count(), 0);
+    BOOST_CHECK_EQUAL(toplevel_window_count(), 0);
 
     window * top = create_toplevel_window("abc", 0, 0, 100, 100);
     BOOST_REQUIRE(top);
 
-    BOOST_CHECK(window_count() == 1);
-    BOOST_CHECK(toplevel_window_count() == 1);
+    BOOST_CHECK_EQUAL(window_count(), 1);
+    BOOST_CHECK_EQUAL(toplevel_window_count(), 1);
 
     window * child = create_child_window(0, 0, 100, 100, top);
     BOOST_REQUIRE(child);
 
-    BOOST_CHECK(window_count() == 2);
-    BOOST_CHECK(toplevel_window_count() == 1);
+    BOOST_CHECK_EQUAL(window_count(), 2);
+    BOOST_CHECK_EQUAL(toplevel_window_count(), 1);
 
     window * top2 = create_toplevel_window("abc", 0, 0, 300, 300);
     BOOST_REQUIRE(top2);
 
-    BOOST_CHECK(window_count() == 3);
-    BOOST_CHECK(toplevel_window_count() == 2);
+    BOOST_CHECK_EQUAL(window_count(), 3);
+    BOOST_CHECK_EQUAL(toplevel_window_count(), 2);
 
     destroy_window(top);
 
-    BOOST_CHECK(window_count() == 1);
-    BOOST_CHECK(toplevel_window_count() == 1);
+    BOOST_CHECK_EQUAL(window_count(), 1);
+    BOOST_CHECK_EQUAL(toplevel_window_count(), 1);
 
     destroy_window(top2);
 
-    BOOST_CHECK(window_count() == 0);
-    BOOST_CHECK(toplevel_window_count() == 0);
+    BOOST_CHECK_EQUAL(window_count(), 0);
+    BOOST_CHECK_EQUAL(toplevel_window_count(), 0);
 }
 
 MYTHOS_KHAOS_TEST_IMPLEMENT_MAIN();

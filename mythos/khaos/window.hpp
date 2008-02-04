@@ -102,6 +102,7 @@ namespace mythos { namespace khaos
     MYTHOS_KHAOS_DECL bool is_visible(window * win);
 
     // reparent
+    // win->is_toplevel must == parent->is_toplevel
     MYTHOS_KHAOS_DECL void reparent(window * win, window * parent);
 
     MYTHOS_KHAOS_DECL void modalize(window * win);

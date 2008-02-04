@@ -146,9 +146,9 @@ namespace mythos { namespace gaia
             "",
             BS_PUSHBUTTON | WS_CHILD,
             0, 0, 12, 6,
-            phwnd ? phwnd : khaos::detail::get_messagewin(),
+            phwnd ? phwnd : (HWND) khaos::detail::get_messagewin(),
             NULL,
-            khaos::detail::get_hinstance(),
+            (HINSTANCE) khaos::detail::get_hinstance(),
             NULL
         );
 
@@ -185,9 +185,9 @@ namespace mythos { namespace gaia
             "",
             BS_CHECKBOX,
             0, 0, 10, 10, // FIXME: Need default size
-            phwnd ? phwnd : khaos::detail::get_messagewin(),
+            phwnd ? phwnd : (HWND) khaos::detail::get_messagewin(),
             NULL,
-            khaos::detail::get_hinstance(),
+            (HINSTANCE) khaos::detail::get_hinstance(),
             NULL
         );
 
