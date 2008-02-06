@@ -26,11 +26,14 @@ project mythos/test
     : source-location .
     ;
 
+lib jpeg ;
+
 exe mythos_test
     :
     main.cpp
     $(MYTHOS_ROOT)/libs/khaos//khaos
     $(MYTHOS_ROOT)/libs/nyx//nyx
     $(MYTHOS_ROOT)/libs/gaia//gaia
+    jpeg
     ;
 

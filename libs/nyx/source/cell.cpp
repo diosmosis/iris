@@ -55,7 +55,12 @@ namespace mythos { namespace nyx
         : x1(0), y1(0), x2(0), y2(0), parent(p)
     {
         if (parent)
+        {
             parent->children.push_back(*this);
+
+            x1 = x2 = parent->x1;
+            y1 = y2 = parent->y1;
+        }
     }
 
     cell::cell(cell const& x)

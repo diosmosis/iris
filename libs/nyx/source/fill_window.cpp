@@ -42,12 +42,12 @@ namespace mythos { namespace nyx
         {
             if (vt.parent)
             {
-                khaos::set_parent(vt.win.khaos_window(), vt.parent.khaos_window());
+                khaos::reparent(vt.win.khaos_window(), vt.parent.khaos_window());
                 nyx::move_window(vt.win, vt.c->x1 - vt.c->parent->x1, vt.c->y1 - vt.c->parent->y1);
             }
             else
             {
-                khaos::set_parent(vt.win.khaos_window(), w.khaos_window());
+                khaos::reparent(vt.win.khaos_window(), w.khaos_window());
                 nyx::move_window(vt.win, vt.c->x1 + lay.xpad, vt.c->y1 + lay.ypad);
             }
         }

@@ -79,7 +79,7 @@ namespace mythos { namespace khaos
 
             // FIXME: shouldn't use find_font for this
             // load default font
-            find_font(::default_font, "nonexistant font family", 12);
+            find_font(::default_font, "Monospace", 12);
         }
 
         void unload()

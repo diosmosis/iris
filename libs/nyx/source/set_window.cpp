@@ -41,7 +41,7 @@ namespace mythos { namespace nyx
         {
             BOOST_ASSERT(i->parent);
 
-            khaos::set_parent(i->win.khaos_window(), i->parent.khaos_window());
+            khaos::reparent(i->win.khaos_window(), i->parent.khaos_window());
             nyx::move_window(i->win, i->c->x1 - i->c->parent->x1, i->c->y1 - i->c->parent->y1);
         }
 

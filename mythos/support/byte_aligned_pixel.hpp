@@ -42,11 +42,99 @@ namespace mythos
 
 namespace boost { namespace gil
 {
-    template <int N_, typename P, int N>
-    inline typename boost::gil::element_reference_type<P>::type at_c(mythos::byte_aligned_pixel<P, N> & p);
+    template <typename P, int N>
+    struct channel_type<mythos::byte_aligned_pixel<P, N> >
+        : channel_type<P>
+    {};
+
+    template <typename P, int N>
+    struct is_planar<mythos::byte_aligned_pixel<P, N> >
+        : is_planar<P>
+    {};
+
+    template <typename P, int N>
+    struct pixel_reference_is_basic<mythos::byte_aligned_pixel<P, N> &>
+        : pixel_reference_is_basic<P &>
+    {};
+
+    template <typename P, int N>
+    struct pixel_reference_is_basic<mythos::byte_aligned_pixel<P, N> const&>
+        : pixel_reference_is_basic<P const&>
+    {};
+
+    template <typename P, int N>
+    struct element_reference_type<mythos::byte_aligned_pixel<P, N> >
+        : element_reference_type<P>
+    {};
+
+    template <typename P, int N>
+    struct element_const_reference_type<mythos::byte_aligned_pixel<P, N> >
+        : element_const_reference_type<P>
+    {};
+
+    template <typename P, int N>
+    struct color_space_type<mythos::byte_aligned_pixel<P, N> >
+        : color_space_type<P>
+    {};
+
+    template <typename P, int N>
+    struct is_pixel<mythos::byte_aligned_pixel<P, N> >
+        : boost::mpl::true_
+    {};
+
+    template <typename P, int N, int K>
+    struct kth_element_reference_type<mythos::byte_aligned_pixel<P, N>, K>
+        : kth_element_reference_type<P, K>
+    {};
+
+    template <typename P, int N, int K>
+    struct kth_element_const_reference_type<mythos::byte_aligned_pixel<P, N>, K>
+        : kth_element_const_reference_type<P, K>
+    {};
+
+    template <typename P, int N, int K>
+    struct kth_element_type<mythos::byte_aligned_pixel<P, N>, K>
+        : kth_element_type<P, K>
+    {};
+
+    // iterator versions
+    template <typename P, int N>
+    struct channel_type<mythos::byte_aligned_pixel<P, N> *>
+        : channel_type<P>
+    {};
+
+    template <typename P, int N>
+    struct is_planar<mythos::byte_aligned_pixel<P, N> *>
+        : is_planar<P>
+    {};
+
+    template <typename P, int N>
+    struct iterator_is_basic<mythos::byte_aligned_pixel<P, N> *>
+        : iterator_is_basic<P *>
+    {};
+
+    template <typename P, int N>
+    struct iterator_is_basic<mythos::byte_aligned_pixel<P, N> const*>
+        : iterator_is_basic<P const*>
+    {};
+
+    template <typename P, int N>
+    struct color_space_type<mythos::byte_aligned_pixel<P, N> *>
+        : color_space_type<P *>
+    {};
 
     template <int N_, typename P, int N>
-    inline typename boost::gil::element_const_reference_type<P>::type at_c(mythos::byte_aligned_pixel<P, N> const& p);
+    inline typename kth_element_reference_type<P, N_>::type at_c(mythos::byte_aligned_pixel<P, N> & p)
+    {
+        return p.pixel_impl().at(boost::mpl::int_<N_>());
+    }
+
+    template <int N_, typename P, int N>
+    inline typename kth_element_const_reference_type<P, N_>::type 
+        at_c(mythos::byte_aligned_pixel<P, N> const& p)
+    {
+        return p.pixel_impl().at(boost::mpl::int_<N_>());
+    }
 }}
 
 #include <boost/gil/pixel.hpp>
@@ -56,13 +144,9 @@ namespace mythos
     // pixel/number of bytes
     template <typename P, int N>
     struct byte_aligned_pixel
-        : boost::gil::detail::homogeneous_color_base<
-            typename boost::gil::channel_type<P>::type,
-            typename P::layout_t,
-            boost::mpl::size<typename P::layout_t::color_space_t>::value
-        >
     {
         typedef typename boost::gil::channel_type<P>::type channel_t;
+        typedef typename P::layout_t layout_t;
 
         typedef byte_aligned_pixel value_type;
         typedef byte_aligned_pixel & reference;
@@ -139,6 +223,18 @@ namespace mythos
             return !(*this == p);
         }
 
+        template <typename N_>
+        typename boost::gil::channel_traits<channel_t>::reference at(N_ n)
+        {
+            return pixel_impl().at(n);
+        }
+
+        template <typename N_>
+        typename boost::gil::channel_traits<channel_t>::const_reference at(N_ n) const
+        {
+            return pixel_impl().at(n);
+        }
+
         // homogeneous pixels have operator[]
         typename boost::gil::channel_traits<channel_t>::reference
             operator [] (std::size_t i)
@@ -158,72 +254,6 @@ namespace mythos
         boost::aligned_storage<N_, boost::alignment_of<P>::value> impl;
     };
 }
-
-namespace boost { namespace gil
-{
-    template <typename P, int N>
-    struct channel_type<mythos::byte_aligned_pixel<P, N> >
-        : channel_type<P>
-    {};
-
-    template <typename P, int N>
-    struct is_planar<mythos::byte_aligned_pixel<P, N> >
-        : is_planar<P>
-    {};
-
-    template <typename P, int N>
-    struct pixel_reference_is_basic<mythos::byte_aligned_pixel<P, N> &>
-        : pixel_reference_is_basic<P &>
-    {};
-
-    template <typename P, int N>
-    struct pixel_reference_is_basic<mythos::byte_aligned_pixel<P, N> const&>
-        : pixel_reference_is_basic<P const&>
-    {};
-
-    template <typename P, int N>
-    struct color_space_type<mythos::byte_aligned_pixel<P, N> >
-        : color_space_type<P>
-    {};
-
-    // iterator versions
-    template <typename P, int N>
-    struct channel_type<mythos::byte_aligned_pixel<P, N> *>
-        : channel_type<P>
-    {};
-
-    template <typename P, int N>
-    struct is_planar<mythos::byte_aligned_pixel<P, N> *>
-        : is_planar<P>
-    {};
-
-    template <typename P, int N>
-    struct iterator_is_basic<mythos::byte_aligned_pixel<P, N> *>
-        : iterator_is_basic<P *>
-    {};
-
-    template <typename P, int N>
-    struct iterator_is_basic<mythos::byte_aligned_pixel<P, N> const*>
-        : iterator_is_basic<P const*>
-    {};
-
-    template <typename P, int N>
-    struct color_space_type<mythos::byte_aligned_pixel<P, N> *>
-        : color_space_type<P *>
-    {};
-
-    template <int N_, typename P, int N>
-    inline typename boost::gil::element_reference_type<P>::type at_c(mythos::byte_aligned_pixel<P, N> & p)
-    {
-        return p.pixel_impl().at(boost::mpl::int_<N_>());
-    }
-
-    template <int N_, typename P, int N>
-    inline typename boost::gil::element_const_reference_type<P>::type at_c(mythos::byte_aligned_pixel<P, N> const& p)
-    {
-        return p.pixel_impl().at(boost::mpl::int_<N_>());
-    }
-}}
 
 #endif // #if !defined( MYTHOS_SUPPORT_BYTE_ALIGNED_PIXEL_HPP )
 

@@ -31,6 +31,7 @@
 
 namespace mythos { namespace nyx
 {
+    // TODO: needs to be rewritten, made more consistent/powerful
     struct cell
         : boost::intrusive::list_base_hook<
             boost::intrusive::link_mode<boost::intrusive::auto_unlink>
@@ -43,6 +44,9 @@ namespace mythos { namespace nyx
         typedef list_type::iterator                             child_iterator;
 
         MYTHOS_NYX_DECL cell(cell * p = 0);
+
+        // TODO: this method should be removed, and cell should be made noncopyable
+        // only here so cells can be placed in constructors. will not copy child list.
         MYTHOS_NYX_DECL cell(cell const& x);
 
         MYTHOS_NYX_DECL void move_by(int cx, int cy);

@@ -45,6 +45,7 @@
 
 #include <boost/detail/endian.hpp>
 #include <boost/detail/atomic_count.hpp>
+#include <boost/gil/extension/io/jpeg_io.hpp>
 
 #include <stdexcept>
 #include <iostream>
@@ -719,7 +720,7 @@ namespace mythos { namespace khaos
     void reparent(window * win, window * parent)
     {
         BOOST_ASSERT(win);
-        BOOST_ASSERT(parent ? win->is_toplevel == parent->is_toplevel : true);
+        BOOST_ASSERT(win->is_toplevel ? (parent ? parent->is_toplevel : true) : true);
 
         x11_window * xwin = static_cast<x11_window *>(win);
         x11_window * xpar = static_cast<x11_window *>(parent);
@@ -734,7 +735,7 @@ namespace mythos { namespace khaos
             xwin->parent = xpar;
             xpar->children.push_back(*xwin);
 
-            phandle = xpar->is_toplevel ? rootwin : xpar->handle;
+            phandle = xwin->is_toplevel ? rootwin : xpar->handle;
         }
         else
         {

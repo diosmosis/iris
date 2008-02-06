@@ -35,7 +35,7 @@
 
 #include <mythos/khaos/image.hpp>
 
-#include <boost/gil/extension/io/bmp_io.hpp>
+#include <boost/gil/extension/io/jpeg_io.hpp>
 
 #include <boost/lambda/bind.hpp>
 
@@ -96,7 +96,7 @@ namespace myapp
 
     void load_img()
     {
-        boost::gil::bmp_read_image("abc.bmp", myapp::img);
+        boost::gil::jpeg_read_image("abc.jpg", myapp::img);
 
         myapp::vw = boost::gil::view(myapp::img);
     }
