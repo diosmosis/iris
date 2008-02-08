@@ -36,7 +36,7 @@
 
 #include <exception>
 
-static mythos::gaia::plugin gaiaimpl;
+static mythos::khaos::annex::plugin<mythos::gaia::interface> gaiaimpl;
 
 namespace mythos { namespace gaia
 {
@@ -51,13 +51,13 @@ namespace mythos { namespace gaia
             nyx::window parent
         )
         {
-            return gaiaimpl.pimpl->label(x, fnt, renderer, extents, parent);
+            return gaiaimpl->label(x, fnt, renderer, extents, parent);
         }
     }
 
     nyx::window label(std::string const& x)
     {
-        return gaiaimpl.pimpl->label(x);
+        return gaiaimpl->label(x);
     }
 
     // text.hpp
@@ -71,13 +71,13 @@ namespace mythos { namespace gaia
             nyx::window parent
         )
         {
-            return gaiaimpl.pimpl->text(x, fnt, renderer, extents, parent);
+            return gaiaimpl->text(x, fnt, renderer, extents, parent);
         }
     }
 
     nyx::window text(std::string & x)
     {
-        return gaiaimpl.pimpl->text(x);
+        return gaiaimpl->text(x);
     }
 
     // image.hpp
@@ -91,20 +91,20 @@ namespace mythos { namespace gaia
             nyx::window const& parent
         )
         {
-            return gaiaimpl.pimpl->image(view, render, w, h, parent);
+            return gaiaimpl->image(view, render, w, h, parent);
         }
     }
 
     // button.hpp
     nyx::window button(boost::function<void ()> const& action, nyx::window const& p)
     {
-        return gaiaimpl.pimpl->button(action, p);
+        return gaiaimpl->button(action, p);
     }
 
     // checkbox.hpp
     nyx::window checkbox(bool & value, nyx::window const& p)
     {
-        return gaiaimpl.pimpl->checkbox(value, p);
+        return gaiaimpl->checkbox(value, p);
     }
 
     // init.hpp

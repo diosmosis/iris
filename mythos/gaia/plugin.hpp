@@ -22,72 +22,100 @@
     THE SOFTWARE.
 */
 
+// old docs, copied:
+// should only be used by gaia implementations
+// also, plugin_impl will only work if the particular implementation has no global
+// state or it is not intended for the user to load/use two instances of the same plugin.
+// if such a set up is required, one must subclass gaia::plugin::impl directly, and use
+// that class in MYTHOS_KHAOS_ANNEX_IMPLEMENT_PLUGIN.
+
+// NOTE: if there is a way to reload a shared library, but use newly allocated memory for
+// its global data, this can be fixed
+
+// GAIA MUST BE STATICALLY LINKED!!!
+// NOTE: it seems that, for some reason, the calls plugin_impl makes all redirect to the original
+// gaia, and not the specific plugin.  since the original gaia does not get linked to, whatever
+// happens, happens at at too low a level, which means the only way plugin_impl can be used is if
+// static linking is used
+
 #if !defined( MYTHOS_GAIA_PLUGIN_HPP )
 #define MYTHOS_GAIA_PLUGIN_HPP
 
 #include <mythos/gaia/gaia.hpp>
+#include <mythos/gaia/init.hpp>
 
 #include <mythos/khaos/annex/plugin.hpp>
 
 namespace mythos { namespace gaia
 {
-    struct plugin
+    struct interface
     {
-        struct impl
+        interface()
         {
-            virtual ~impl() {}
-
-            // label.hpp
-            virtual nyx::window label(
-                std::string const& x,
-                void const* fnt,
-                void (*renderer)(void const*, khaos::image_view const&, std::string const&),
-                nyx::point const& extents,
-                nyx::window parent
-            ) = 0;
-
-            virtual nyx::window label(std::string const& x) = 0;
-
-            // text.hpp
-            virtual nyx::window text(
-                std::string & x,
-                void const* fnt,
-                void (*renderer)(void const*, khaos::image_view const&, std::string const&),
-                nyx::point const& extents,
-                nyx::window parent
-            ) = 0;
-
-            virtual nyx::window text(std::string & x) = 0;
-
-            // image.hpp
-            virtual nyx::window image(
-                boost::any const& view,
-                void (*render)(boost::any const& img, khaos::image_view const& vw),
-                int w, int h,
-                nyx::window const& parent
-            ) = 0;
-
-            // button.hpp
-            virtual nyx::window button(boost::function<void ()> const& action, nyx::window const& p) = 0;
-
-            // checkbox.hpp
-            virtual nyx::window checkbox(bool & value, nyx::window const& p) = 0;
-        };
-
-        plugin() {}
-
-        // TODO: need some way of passing generic amount of arguments to plugin
-        plugin(std::string const& fname) : pimpl(fname) {}
-        plugin(std::string const& fname, std::string const& extra) : pimpl(fname, extra) {}
-
-        void load(std::string const& fname)
+            init();
+        }
+        interface(std::string const& extra)
         {
-            pimpl.load(fname);
+            init(extra);
         }
 
-        void load(std::string const& fname, std::string const& extra)
+        virtual ~interface() {}
+
+        // label.hpp
+        virtual nyx::window label(
+            std::string const& x,
+            void const* fnt,
+            void (*renderer)(void const*, khaos::image_view const&, std::string const&),
+            nyx::point const& extents,
+            nyx::window parent
+        )
         {
-            pimpl.load(fname, extra);
+            return gaia::detail::label(x, fnt, renderer, extents, parent);
+        }
+
+        virtual nyx::window label(std::string const& x)
+        {
+            return gaia::label(x);
+        }
+
+        // text.hpp
+        virtual nyx::window text(
+            std::string & x,
+            void const* fnt,
+            void (*renderer)(void const*, khaos::image_view const&, std::string const&),
+            nyx::point const& extents,
+            nyx::window parent
+        )
+        {
+            return gaia::detail::text(x, fnt, renderer, extents, parent);
+        }
+
+        virtual nyx::window text(std::string & x)
+        {
+            return gaia::text(x);
+        }
+
+        // image.hpp
+        virtual nyx::window image(
+            boost::any const& view,
+            void (*render)(boost::any const& img, khaos::image_view const& vw),
+            int w, int h,
+            nyx::window const& parent
+        )
+        {
+            return gaia::detail::image(view, render, w, h, parent);
+        }
+
+        // button.hpp
+        virtual nyx::window button(boost::function<void ()> const& action, nyx::window const& p)
+        {
+            return gaia::button(action, p);
+        }
+
+        // checkbox.hpp
+        virtual nyx::window checkbox(bool & value, nyx::window const& p)
+        {
+            return gaia::checkbox(value, p);
         }
 
         // label.hpp
@@ -100,14 +128,9 @@ namespace mythos { namespace gaia
             nyx::window parent = nyx::window()
         )
         {
-            return pimpl->label(
+            return label(
                 x, &fnt, detail::label_renderer<F>, detail::text_extents(fnt, x, maxx, maxy), parent
             );
-        }
-
-        nyx::window label(std::string const& x)
-        {
-            return pimpl->label(x);
         }
 
         // text.hpp
@@ -120,36 +143,17 @@ namespace mythos { namespace gaia
             nyx::window parent = nyx::window()
         )
         {
-            return pimpl->text(
+            return text(
                 x, &fnt, detail::label_renderer<F>, detail::text_extents(fnt, x, maxx, maxy), parent
             );
-        }
-
-        nyx::window label(std::string & x)
-        {
-            return pimpl->text(x);
         }
 
         // image.hpp
         template <typename View>
         nyx::window image(View const& vw, nyx::window parent = nyx::window())
         {
-            return pimpl->image(vw, detail::draw_image<View>, vw.width(), vw.height(), parent);
+            return image(vw, detail::draw_image<View>, vw.width(), vw.height(), parent);
         }
-
-        // button.hpp
-        nyx::window button(boost::function<void ()> const& action, nyx::window const& p = nyx::window())
-        {
-            return pimpl->button(action, p);
-        }
-
-        // checkbox.hpp
-        nyx::window checkbox(bool & value, nyx::window const& p = nyx::window())
-        {
-            return pimpl->checkbox(value, p);
-        }
-
-        khaos::annex::plugin<impl> pimpl;
     };
 }}
 

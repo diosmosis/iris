@@ -29,7 +29,7 @@
 #include <mythos/gaia/image.hpp>
 #include <mythos/gaia/button.hpp>
 
-#include <mythos/gaia/detail/plugin_impl.hpp>
+#include <mythos/gaia/plugin.hpp>
 
 #include <mythos/iris/event_handler.hpp>
 #include <mythos/iris/dsel.hpp>
@@ -204,5 +204,5 @@ namespace mythos { namespace gaia
     }
 }}
 
-MYTHOS_KHAOS_ANNEX_IMPLEMENT_PLUGIN(mythos::gaia::detail::plugin_impl);
+MYTHOS_KHAOS_ANNEX_IMPLEMENT_PLUGIN(mythos::gaia::interface);
 
