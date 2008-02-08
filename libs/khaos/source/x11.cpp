@@ -45,7 +45,6 @@
 
 #include <boost/detail/endian.hpp>
 #include <boost/detail/atomic_count.hpp>
-#include <boost/gil/extension/io/jpeg_io.hpp>
 
 #include <stdexcept>
 #include <iostream>

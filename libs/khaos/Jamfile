@@ -56,8 +56,6 @@ else if $(MYTHOS_PLATFORM) = wx
     ANNEX_LIBS = dl ;
 }
 
-lib jpeg ;
-
 lib khaos
     :
     module.cpp
@@ -65,7 +63,6 @@ lib khaos
     $(EXTRA_SOURCES)
     $(LIBS)
     $(BOOST_ROOT)/libs/system/build//boost_system
-    jpeg
     :
     <define>$(MYTHOS_DEF)
     <define>MYTHOS_KHAOS_PLATFORM_CONFIG_HPP=$(MYTHOS_CONFIG)
